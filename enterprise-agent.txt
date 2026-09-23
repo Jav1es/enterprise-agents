@@ -1,0 +1,101 @@
+你是一个资深 Python 项目工程化助手，擅长把零散的项目信息整理成标准、可维护的代码仓库。现在需要你帮我处理一个名为 enterprise-agent 的项目。
+
+## 背景
+我正在准备一个企业级智能体系统的作品集项目，目前手头只有一些零散的信息（我会在下面提供）。我对底层代码细节不太熟悉，所以需要你帮我：
+1. 从现有信息中提取关键内容
+2. 建立标准的本地 Python 项目结构
+3. 生成必要的项目文件（内容由你根据信息填充，我后续再微调）
+4. 扫描敏感信息，确保不会泄露密钥
+5. 初始化本地 Git 仓库
+6. 最后给我一份清晰的下一步操作清单，我拿着去 GitHub 提交
+
+## 我提供的信息
+（这里我会粘贴所有关于 enterprise-agent 的资料：架构描述、模块说明、依赖列表、配置项、已有的代码片段、文档草稿等。如果信息不全，你可以基于常见企业级智能体系统的最佳实践合理补全，并用 TODO 标注需要我确认的地方。）
+
+## 你的任务
+
+### 第一步：信息提取与整理
+- 从我的资料中提取：项目名称、核心功能、六层架构（接入层、编排层、工具层、记忆层、知识层、LLM推理层）、技术栈、依赖库、配置项、API 接口等。
+- 如果某些部分缺失，按企业级智能体系统的标准补全，并标注 `[待确认]`。
+
+### 第二步：建立标准 Python 项目结构
+在本地创建一个名为 `enterprise-agent` 的根目录，内部采用 `src/` 布局。目录结构如下（可根据实际信息调整）：
+
+```
+enterprise-agent/
+├── src/
+│   └── enterprise_agent/
+│       ├── __init__.py
+│       ├── orchestration/          # LangGraph 编排层
+│       ├── memory/                 # 双视野记忆层
+│       ├── knowledge/              # RAG 知识层
+│       ├── tools/                  # 工具层与接入层
+│       ├── api/                    # FastAPI 服务入口
+│       └── config/                 # 配置管理
+├── tests/
+├── docs/
+├── scripts/
+├── .github/workflows/
+├── .gitignore
+├── LICENSE
+├── README.md
+├── requirements.txt
+├── pyproject.toml
+├── Dockerfile
+├── docker-compose.yml
+├── .env.example
+└── config.example.yaml
+```
+
+为每个目录创建必要的 `__init__.py` 和占位文件，确保结构完整。
+
+### 第三步：生成关键文件内容
+根据提取的信息，生成以下文件的具体内容（用 Markdown 代码块输出，方便我复制）：
+
+1. **README.md**：项目介绍、六层架构概览、核心能力、快速开始、文档链接。
+2. **.gitignore**：Python 标准忽略规则，必须包含 `.env`、`config.yaml`、`*.key`、`*.pem`、`__pycache__/`、`.venv/` 等。
+3. **requirements.txt**：根据技术栈列出依赖，如 fastapi、langgraph、langchain、pydantic、redis、psycopg2-binary、chromadb、sqlalchemy、docker 等，版本用 `>=` 宽松指定。
+4. **pyproject.toml**：项目元数据、构建系统、依赖分组。
+5. **Dockerfile** 和 **docker-compose.yml**：包含 agent-api、redis、pgvector 等服务。
+6. **.env.example**：列出所有需要的环境变量，如 `OPENAI_API_KEY=`、`REDIS_URL=`、`DATABASE_URL=`、`LLM_MODEL=` 等，值留空或写占位符。
+7. **config.example.yaml**：配置模板，包含 LLM、记忆、RAG、工具等配置项。
+8. **LICENSE**：使用 MIT License。
+9. 各模块下的占位 Python 文件：如 `orchestration/graph.py`、`memory/short_term.py`、`knowledge/rag.py` 等，写入简单的类/函数骨架和 TODO 注释。
+
+### 第四步：敏感信息扫描
+- 检查我提供的所有资料中是否包含真实的 API Key、密码、Token、数据库连接串。
+- 如果发现，立即指出并提醒我替换为占位符。
+- 生成一个 `scripts/check_sensitive.sh` 脚本，用于扫描硬编码密钥，内容可包括：
+  ```bash
+  #!/bin/bash
+  git grep -i "api_key\|api_secret\|password\|token\|secret" -- "*.py" "*.yaml" "*.md" | grep -v "YOUR_\|example\|placeholder\|TODO"
+  ```
+- 在最终报告中明确告诉我：哪些文件绝对不能提交（如 `.env`、`config.yaml`），以及如何用 `git filter-repo` 清除历史中的敏感信息（如果需要）。
+
+### 第五步：初始化本地 Git 仓库
+给我一份完整的命令行操作清单，按顺序执行：
+1. `cd enterprise-agent`
+2. `git init`
+3. `git add .`
+4. `git commit -m "feat: initial commit - enterprise-agent v0.1.0"`
+5. 提醒我：在 GitHub 创建空仓库（不要初始化 README/.gitignore/LICENSE）
+6. `git remote add origin https://github.com/我的用户名/enterprise-agent.git`
+7. `git branch -M main`
+8. `git push -u origin main`
+
+### 第六步：输出最终报告
+请按以下格式输出：
+- **项目结构树**：展示生成的完整目录树。
+- **文件内容**：每个关键文件的完整内容（用代码块包裹）。
+- **敏感信息扫描结果**：列出发现的风险点和处理建议。
+- **下一步操作清单**：我需要在本地终端执行的命令，以及去 GitHub 网页上做的操作。
+- **待确认事项**：所有 `[待确认]` 的列表，方便我逐一核对。
+
+## 注意事项
+- 不要让我手动写代码，你直接生成可用的模板和占位内容。
+- 所有涉及密钥的地方一律用 `YOUR_API_KEY` 或空值占位。
+- 如果你不确定某个技术细节，用 `TODO` 标注，不要编造。
+- 输出语言为中文，但代码、文件名、命令保持英文。
+- 最后给我一句鼓励的话，让我有信心去提交。
+
+现在，请开始处理。我会把所有关于 enterprise-agent 的资料附在下面。

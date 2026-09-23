@@ -1,0 +1,94 @@
+# ===== 敏感信息（严禁提交） =====
+.env
+.env.*
+!.env.example
+config.yaml
+config.local.yaml
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+secrets/
+credentials.json
+service-account.json
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ===== 虚拟环境 / 依赖 =====
+.venv/
+venv/
+env/
+ENV/
+.uv/
+.python-version
+.pip-cache/
+~/.cache/uv/
+
+# ===== 测试 / 覆盖率 =====
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.cache/
+hypothesis/
+
+# ===== IDE / 编辑器 =====
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.classpath
+.settings/
+
+# ===== 日志 / 运行时数据 =====
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+nohup.out
+chroma-data/
+data/
+uploads/
+
+# ===== 文档生成 =====
+site/
+*.ipynb_checkpoints
+
+# ===== Docker / 容器 =====
+*.tar
+*.tar.gz
+docker-data/
+volumes/
+
+# ===== 数据库 =====
+*.sqlite3
+*.db
+*.sql

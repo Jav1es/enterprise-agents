@@ -1,0 +1,93 @@
+# ===== Enterprise Agent 配置模板 =====
+# 复制为 config.yaml 使用；config.yaml 已被 .gitignore 排除，严禁提交
+# 所有敏感值一律通过环境变量注入（${VAR} 语法），不要在文件中写明文密钥
+
+app:
+  name: enterprise-agent
+  env: ${APP_ENV:-dev}
+  log_level: ${LOG_LEVEL:-info}
+  api_port: ${API_PORT:-8080}
+
+llm:
+  api_key: ${LLM_API_KEY}
+  base_url: ${LLM_BASE_URL:-https://api.openai.com/v1}
+  model: ${LLM_MODEL:-gpt-4o}
+  temperature: 0.3
+  max_tokens: 2048
+  fallback_models: ${LLM_FALLBACK_MODELS:-qwen-max,deepseek-chat}
+  max_calls_per_run: ${LLM_MAX_CALLS:-10}
+  timeout_seconds: 60
+
+memory:
+  short_term:
+    redis_url: ${REDIS_URL:-redis://localhost:6379/0}
+    ttl_seconds: ${REDIS_SHORT_TERM_TTL:-1800}
+    max_context_messages: 20
+    rolling_summary_threshold: 15
+  long_term:
+    database_url: ${DATABASE_URL}
+    table_prefix: mem_
+    fact_confidence_threshold: 0.6
+    auto_promote_frequency: 3
+    prune_days: 90
+
+knowledge:
+  vector_store: ${VECTOR_STORE:-chroma}
+  chroma:
+    persist_dir: ${CHROMA_PERSIST_DIR:-./data/chroma}
+    collection_name: enterprise_docs
+  milvus:
+    host: ${MILVUS_HOST:-localhost}
+    port: ${MILVUS_PORT:-19530}
+    collection_name: enterprise_docs
+  embedding:
+    model: ${EMBEDDING_MODEL:-BAAI/bge-small-zh-v1.5}
+    dimension: 512
+  retrieval:
+    chunk_size: ${CHUNK_SIZE:-500}
+    chunk_overlap: ${CHUNK_OVERLAP:-50}
+    top_k: 10
+    rrf_k: 60
+  reranker:
+    model: ${RERANKER_MODEL:-BAAI/bge-reranker-base}
+    enabled: true
+
+tools:
+  mcp_servers_registry: ./config/mcp_servers.json
+  http_connector_timeout_seconds: 30
+  allowed_domains:
+    - "*.example.com"
+
+channels:
+  dingtalk:
+    app_key: ${DINGTALK_APP_KEY}
+    app_secret: ${DINGTALK_APP_SECRET}
+    enabled: false
+  wecom:
+    corp_id: ${WECOM_CORP_ID}
+    agent_id: ${WECOM_AGENT_ID}
+    secret: ${WECOM_SECRET}
+    websocket_sdk: wecom-aibot-python-sdk
+    enabled: false
+  oa:
+    api_url: ${OA_API_URL}
+    api_token: ${OA_API_TOKEN}
+    enabled: false
+  erp:
+    api_url: ${ERP_API_URL}
+    api_token: ${ERP_API_TOKEN}
+    enabled: false
+
+security:
+  api_key: ${API_KEY}
+  jwt_secret: ${JWT_SECRET}
+  jwt_algorithm: HS256
+  ip_whitelist: []
+  rate_limit_per_minute: 120
+
+observability:
+  prometheus_enabled: true
+  otel_enabled: true
+  jaeger_endpoint: http://jaeger:14268/api/traces
+  log_retention_days: 30
+  audit_retention_days: 180

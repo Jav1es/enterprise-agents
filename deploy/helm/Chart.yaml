@@ -1,0 +1,13 @@
+apiVersion: v2
+name: enterprise-agent
+description: Enterprise Agent Helm Chart (K8s 部署)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+# TODO: 补充 values.yaml / templates 完整 Chart 内容
+# 关键配置项:
+#   - HPA: CPU 阈值 70%
+#   - Liveness/Readiness 探针: /health
+#   - Secret: 引用 K8s Secret（禁止明文）
+#   - 依赖: redis / postgres-pgvector
