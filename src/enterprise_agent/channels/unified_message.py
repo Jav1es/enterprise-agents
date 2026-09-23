@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +16,7 @@ class UnifiedMessage(BaseModel):
     content: str
     content_type: str = "text"
     channel_token: str = ""
-    extra: Dict[str, Any] = Field(default_factory=dict)
+    extra: dict[str, Any] = Field(default_factory=dict)
 
 
 class ChatRequest(BaseModel):
@@ -35,5 +35,5 @@ class ChatResponse(BaseModel):
     session_id: str
     reply: str
     trace_id: str = ""
-    citations: List[Dict[str, Any]] = Field(default_factory=list)
+    citations: list[dict[str, Any]] = Field(default_factory=list)
     latency_ms: int = 0

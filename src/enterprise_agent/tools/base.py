@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +16,7 @@ class ToolOutput(BaseModel):
     """工具输出 Schema 基类。"""
 
     success: bool = True
-    data: Dict[str, Any] = Field(default_factory=dict)
+    data: dict[str, Any] = Field(default_factory=dict)
     error: str = ""
 
 

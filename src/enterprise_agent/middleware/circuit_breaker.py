@@ -5,7 +5,8 @@ from __future__ import annotations
 import enum
 import logging
 import time
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class CircuitBreaker:
         self.recovery_timeout = recovery_timeout_seconds
         self.state = CircuitState.CLOSED
         self._consecutive_failures = 0
-        self._opened_at: Optional[float] = None
+        self._opened_at: float | None = None
 
     async def call(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         """带熔断保护的调用。"""

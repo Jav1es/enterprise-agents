@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from .base import BaseChannel
 from .unified_message import UnifiedMessage

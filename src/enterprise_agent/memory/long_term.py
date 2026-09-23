@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
@@ -24,7 +24,7 @@ class LongTermMemoryStore:
     def __init__(self, database_url: str) -> None:
         self._engine: AsyncEngine = create_async_engine(database_url)
 
-    async def extract_and_store(self, session_id: str, dialogue: List[Dict[str, Any]]) -> None:
+    async def extract_and_store(self, session_id: str, dialogue: list[dict[str, Any]]) -> None:
         """从对话中提取原子事实并持久化。
 
         TODO: 调用 LLM 完成事实抽取（Pydantic 结构化输出），返回 facts 列表。
@@ -37,12 +37,12 @@ class LongTermMemoryStore:
             else:
                 await self._insert_fact(session_id, fact)
 
-    async def _extract_facts(self, dialogue: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    async def _extract_facts(self, dialogue: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """从对话中抽取事实三元组。"""
         # TODO: 接入 LLM 结构化抽取
         return []
 
-    async def _find_conflict(self, fact: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    async def _find_conflict(self, fact: dict[str, Any]) -> dict[str, Any] | None:
         """冲突检测：查找同实体同谓词的旧记录。"""
         async with self._engine.connect() as conn:
             result = await conn.execute(
@@ -56,7 +56,7 @@ class LongTermMemoryStore:
             row = result.mappings().first()
             return dict(row) if row else None
 
-    async def _insert_fact(self, session_id: str, fact: Dict[str, Any]) -> None:
+    async def _insert_fact(self, session_id: str, fact: dict[str, Any]) -> None:
         """插入新事实。"""
         async with self._engine.begin() as conn:
             await conn.execute(
@@ -75,7 +75,7 @@ class LongTermMemoryStore:
                 },
             )
 
-    async def _update_fact(self, fact_id: int, fact: Dict[str, Any]) -> None:
+    async def _update_fact(self, fact_id: int, fact: dict[str, Any]) -> None:
         """更新已有事实（更高置信度覆盖）。"""
         async with self._engine.begin() as conn:
             await conn.execute(
@@ -91,7 +91,7 @@ class LongTermMemoryStore:
                 },
             )
 
-    async def query_user_preferences(self, user_id: str) -> List[Dict[str, Any]]:
+    async def query_user_preferences(self, user_id: str) -> list[dict[str, Any]]:
         """查询用户偏好（按访问频率排序）。"""
         async with self._engine.connect() as conn:
             result = await conn.execute(

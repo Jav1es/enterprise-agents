@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class CrossEncoderReranker:
     def __init__(self, model_name: str = "BAAI/bge-reranker-base", device: str = "cpu") -> None:
         self.model_name = model_name
         self.device = device
-        self._model: Optional[Any] = None
+        self._model: Any | None = None
         self._load_model()
 
     def _load_model(self) -> None:
@@ -35,15 +35,15 @@ class CrossEncoderReranker:
     def rerank(
         self,
         query: str,
-        candidates: List[Dict[str, Any]],
-        top_k: Optional[int] = None,
-    ) -> List[Dict[str, Any]]:
+        candidates: list[dict[str, Any]],
+        top_k: int | None = None,
+    ) -> list[dict[str, Any]]:
         """对候选结果重排。"""
         if self._model is None or not candidates:
             return candidates
         pairs = [(query, c.get("text", "")) for c in candidates]
         scores = self._model.predict(pairs)
-        ranked = sorted(zip(candidates, scores), key=lambda x: x[1], reverse=True)
+        ranked = sorted(zip(candidates, scores, strict=True), key=lambda x: x[1], reverse=True)
         top_k = top_k or len(ranked)
         return [
             {**cand, "rerank_score": float(score)}

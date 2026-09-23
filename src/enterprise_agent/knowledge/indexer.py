@@ -5,16 +5,14 @@
 
 from __future__ import annotations
 
-from typing import List
-
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
 def split_documents(
-    documents: List[object],
+    documents: list[object],
     chunk_size: int = 500,
     chunk_overlap: int = 50,
-) -> List[object]:
+) -> list[object]:
     """按语义边界切分文档。
 
     Args:

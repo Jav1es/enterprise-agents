@@ -6,7 +6,7 @@ TODO: 补充完整 RAG 管线（load -> split -> embed -> index -> hybrid search
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .retriever import HybridRetriever
 
@@ -19,12 +19,12 @@ class RAGPipeline:
     def __init__(
         self,
         retriever: HybridRetriever,
-        reranker: Optional[Any] = None,
+        reranker: Any | None = None,
     ) -> None:
         self.retriever = retriever
         self.reranker = reranker
 
-    async def retrieve_with_evidence(self, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
+    async def retrieve_with_evidence(self, query: str, top_k: int = 10) -> list[dict[str, Any]]:
         """检索并返回带证据的结果。"""
         results = self.retriever.hybrid_search(query, top_k=top_k)
 

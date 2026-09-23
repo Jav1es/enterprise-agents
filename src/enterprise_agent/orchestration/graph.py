@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, List, Optional
+from typing import Any
 
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolExecutor
@@ -31,7 +31,7 @@ class AgentWorkflow:
     def __init__(
         self,
         llm: Any,
-        tools: Optional[List[Any]] = None,
+        tools: list[Any] | None = None,
         memory_manager: Any = None,
         retriever: Any = None,
     ) -> None:

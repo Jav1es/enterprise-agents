@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Literal, Optional, Tuple, TypedDict
+from typing import Any, Literal, TypedDict
 
 
 class AgentState(TypedDict, total=False):
@@ -25,11 +25,11 @@ class AgentState(TypedDict, total=False):
     user_input: str
     session_id: str
     route: Literal["knowledge", "data", "mixed"]
-    chat_history: List[Dict[str, Any]]
-    intermediate_steps: List[Tuple[str, str, Any]]
-    knowledge_evidence: List[Dict[str, Any]]
-    tool_results: List[Dict[str, Any]]
-    final_output: Optional[str]
+    chat_history: list[dict[str, Any]]
+    intermediate_steps: list[tuple[str, str, Any]]
+    knowledge_evidence: list[dict[str, Any]]
+    tool_results: list[dict[str, Any]]
+    final_output: str | None
     retry_count: int
     step_number: int
-    errors: List[str]
+    errors: list[str]

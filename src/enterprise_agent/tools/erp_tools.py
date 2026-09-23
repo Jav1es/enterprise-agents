@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -28,12 +28,12 @@ class ERPClient:
         self._api_token = os.getenv("ERP_API_TOKEN", "")
         # TODO: 初始化 httpx.AsyncClient
 
-    async def get_inventory(self, product_code: str) -> Dict[str, Any]:
+    async def get_inventory(self, product_code: str) -> dict[str, Any]:
         """查询库存。"""
         # TODO: 调用 ERP HTTP 接口
         return {"product_code": product_code, "stock": 0}
 
-    async def __aenter__(self) -> "ERPClient":
+    async def __aenter__(self) -> ERPClient:
         return self
 
     async def __aexit__(self, *exc: Any) -> None:

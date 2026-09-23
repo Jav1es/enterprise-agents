@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import List
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -54,7 +53,7 @@ class Settings(BaseSettings):
     jwt_secret: str = Field(default="", alias="JWT_SECRET")
 
     @property
-    def fallback_model_list(self) -> List[str]:
+    def fallback_model_list(self) -> list[str]:
         """备用模型列表。"""
         return [m.strip() for m in self.llm_fallback_models.split(",") if m.strip()]
 

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import redis.asyncio as aioredis
 
@@ -25,14 +25,14 @@ class ShortTermMemory:
     def _key(self, session_id: str) -> str:
         return f"{self._key_prefix}{session_id}"
 
-    async def get_history(self, session_id: str) -> List[Dict[str, Any]]:
+    async def get_history(self, session_id: str) -> list[dict[str, Any]]:
         """读取会话历史（OpenAI 消息格式）。"""
         raw = await self._redis.get(self._key(session_id))
         if not raw:
             return []
         return json.loads(raw)
 
-    async def append_message(self, session_id: str, message: Dict[str, Any]) -> None:
+    async def append_message(self, session_id: str, message: dict[str, Any]) -> None:
         """追加一条消息并刷新 TTL。"""
         key = self._key(session_id)
         history = await self.get_history(session_id)
@@ -40,7 +40,7 @@ class ShortTermMemory:
         # TODO: 上下文预算控制 — 超过 max_context_messages 时触发滚动摘要
         await self._redis.set(key, json.dumps(history), ex=self.ttl_seconds)
 
-    async def get_summary(self, session_id: str) -> Optional[str]:
+    async def get_summary(self, session_id: str) -> str | None:
         """读取滚动摘要。"""
         return await self._redis.get(f"{self._key(session_id)}:summary")
 

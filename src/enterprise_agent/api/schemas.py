@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
-
 from pydantic import BaseModel, Field
 
 
@@ -31,5 +29,5 @@ class ChatResponse(BaseModel):
     session_id: str
     reply: str
     trace_id: str = ""
-    citations: List[Citation] = Field(default_factory=list)
+    citations: list[Citation] = Field(default_factory=list)
     latency_ms: int = 0

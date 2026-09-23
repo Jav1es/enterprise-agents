@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 
@@ -25,13 +25,13 @@ class HTTPConnector:
             headers={"Authorization": f"Bearer {api_token}"} if api_token else {},
         )
 
-    async def get(self, path: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         """GET 请求。"""
         resp = await self._client.get(path, params=params)
         resp.raise_for_status()
         return resp.json()
 
-    async def post(self, path: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def post(self, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         """POST 请求。"""
         resp = await self._client.post(path, json=payload or {})
         resp.raise_for_status()

@@ -7,7 +7,7 @@ import logging
 import time
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from sse_starlette.sse import EventSourceResponse
 
 from enterprise_agent.api.schemas import ChatRequest, ChatResponse

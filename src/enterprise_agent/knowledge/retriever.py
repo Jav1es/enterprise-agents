@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from rank_bm25 import BM25Okapi
 
@@ -21,8 +21,8 @@ class HybridRetriever:
     def __init__(
         self,
         collection: Any,
-        bm25_index: Optional[BM25Okapi] = None,
-        doc_ids: Optional[List[str]] = None,
+        bm25_index: BM25Okapi | None = None,
+        doc_ids: list[str] | None = None,
         top_k: int = 10,
     ) -> None:
         self.collection = collection
@@ -30,11 +30,11 @@ class HybridRetriever:
         self.doc_ids = doc_ids or []
         self.top_k = top_k
 
-    def _tokenize(self, text: str) -> List[str]:
+    def _tokenize(self, text: str) -> list[str]:
         """简单分词。TODO: 接入 jieba 等中文分词。"""
         return [tok for tok in text.replace("，", " ").replace("。", " ").split() if tok]
 
-    def hybrid_search(self, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
+    def hybrid_search(self, query: str, top_k: int = 10) -> list[dict[str, Any]]:
         """混合检索：向量 + BM25 → RRF 融合排序。"""
         # 1. 向量检索
         # TODO: 生成 query 的 embedding 后查询
@@ -43,15 +43,15 @@ class HybridRetriever:
         vector_ids = vector_results["ids"][0]
 
         # 2. BM25 检索
-        bm25_scores: Dict[str, float] = {}
+        bm25_scores: dict[str, float] = {}
         if self.bm25 is not None:
             scores = self.bm25.get_scores(self._tokenize(query))
-            for doc_id, score in zip(self.doc_ids, scores):
+            for doc_id, score in zip(self.doc_ids, scores, strict=True):
                 if score > 0:
                     bm25_scores[doc_id] = float(score)
 
         # 3. RRF (Reciprocal Rank Fusion) 融合
-        rrf_scores: Dict[str, float] = {}
+        rrf_scores: dict[str, float] = {}
         for rank, doc_id in enumerate(vector_ids):
             rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + 1.0 / (RRF_K + rank + 1)
         for rank, doc_id in enumerate(

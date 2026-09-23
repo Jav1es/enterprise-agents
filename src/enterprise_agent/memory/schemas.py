@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -11,7 +10,7 @@ from pydantic import BaseModel, Field
 class Fact(BaseModel):
     """事实三元组。"""
 
-    id: Optional[int] = None
+    id: int | None = None
     session_id: str
     user_id: str = ""
     subject: str = Field(description="主体")
@@ -20,8 +19,8 @@ class Fact(BaseModel):
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     access_count: int = 0
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: Optional[datetime] = None
-    expired_at: Optional[datetime] = None
+    updated_at: datetime | None = None
+    expired_at: datetime | None = None
 
 
 class MemoryStats(BaseModel):
