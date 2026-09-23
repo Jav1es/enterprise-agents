@@ -30,7 +30,6 @@ chromadb>=0.5.0
 pymilvus>=2.4.0
 rank-bm25>=0.2.2
 sentence-transformers>=3.0.0
-cross-encoder>=2.0.0
 pypdf>=4.0.0
 docx2txt>=0.8
 openpyxl>=3.1.0

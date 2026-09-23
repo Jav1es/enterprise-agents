@@ -54,7 +54,6 @@ dev = [
 ]
 ml = [
     "pymilvus>=2.4.0",
-    "cross-encoder>=2.0.0",
 ]
 observability = [
     "prometheus-fastapi-instrumentator>=7.0.0",
