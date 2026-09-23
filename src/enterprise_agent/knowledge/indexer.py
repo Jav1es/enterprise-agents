@@ -5,7 +5,10 @@
 
 from __future__ import annotations
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+try:
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+except ImportError:  # langchain < 1.0 兼容
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
 def split_documents(

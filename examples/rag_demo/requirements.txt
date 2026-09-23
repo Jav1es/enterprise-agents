@@ -1,0 +1,22 @@
+# RAG Demo 依赖说明
+#
+# 本演示复用 enterprise-agent 仓库根目录的依赖（见 pyproject.toml / requirements.txt）。
+# 运行前确保以下核心依赖已安装：
+
+chromadb>=0.5.0
+rank-bm25>=0.2.2
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+langchain-text-splitters>=0.3.0
+
+# 可选：启用 Cross-Encoder 重排（需联网下载模型 BAAI/bge-reranker-base）
+# sentence-transformers>=3.0.0
+
+# 可选：如需调用本地 Ollama 等 OpenAI 兼容接口，无需额外依赖；
+# 通过环境变量 LLM_BASE_URL / LLM_MODEL / LLM_API_KEY 配置。
+
+# 安装方式（推荐 uv）：
+#   cd enterprise-agents && pip install uv && uv sync
+# 或直接：
+#   pip install chromadb rank-bm25 langchain langchain-openai langchain-text-splitters
