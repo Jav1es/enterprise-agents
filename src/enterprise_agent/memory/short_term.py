@@ -42,7 +42,10 @@ class ShortTermMemory:
 
     async def get_summary(self, session_id: str) -> str | None:
         """读取滚动摘要。"""
-        return await self._redis.get(f"{self._key(session_id)}:summary")
+        raw = await self._redis.get(f"{self._key(session_id)}:summary")
+        if raw is None:
+            return None
+        return raw.decode("utf-8") if isinstance(raw, bytes) else str(raw)
 
     async def clear(self, session_id: str) -> None:
         """清空会话状态。"""

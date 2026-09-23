@@ -10,7 +10,7 @@ import logging
 from typing import Any
 
 from langgraph.graph import END, StateGraph
-from langgraph.prebuilt import ToolExecutor
+from langgraph.prebuilt import ToolNode
 
 from .nodes import (
     planner_node,
@@ -37,10 +37,10 @@ class AgentWorkflow:
     ) -> None:
         self.llm = llm
         self.tools = tools or []
-        self.tool_executor = ToolExecutor(self.tools)
+        self.tool_executor = ToolNode(self.tools)
         self.memory = memory_manager
         self.retriever = retriever
-        self.graph = self._build_graph()
+        self.graph: Any = self._build_graph()
 
     def _route_decision(self, state: AgentState) -> str:
         """根据 route 字段选择后续节点。"""
@@ -51,7 +51,7 @@ class AgentWorkflow:
         # TODO: 根据 planner 输出判断是否仍需要调用工具
         return "tool" if not state.get("tool_results") else "respond"
 
-    def _build_graph(self) -> StateGraph:
+    def _build_graph(self) -> Any:
         graph = StateGraph(AgentState)
 
         # 添加节点
