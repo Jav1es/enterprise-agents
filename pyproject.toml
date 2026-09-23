@@ -63,8 +63,8 @@ observability = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Jav1es/enterprise-agent"
-Repository = "https://github.com/Jav1es/enterprise-agent.git"
+Homepage = "https://github.com/Jav1es/enterprise-agents"
+Repository = "https://github.com/Jav1es/enterprise-agents.git"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/enterprise_agent"]

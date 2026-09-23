@@ -50,7 +50,7 @@ Python 3.11+ · FastAPI · LangGraph · LangChain · Pydantic v2 · ChromaDB/Mil
 
 ```bash
 # 1. 克隆项目并安装依赖
-cd enterprise-agent
+cd enterprise-agents
 pip install uv && uv sync
 
 # 2. 配置环境变量
@@ -83,7 +83,7 @@ open http://localhost:8080/docs
 ## 项目结构
 
 ```
-enterprise-agent/
+enterprise-agents/
 ├── src/
 │   └── enterprise_agent/
 │       ├── orchestration/          # LangGraph 编排层
