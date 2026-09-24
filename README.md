@@ -1,5 +1,11 @@
 # Enterprise Agent
 
+[![CI](https://github.com/Jav1es/enterprise-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/Jav1es/enterprise-agents/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Architecture](https://img.shields.io/badge/Architecture-6_layers-8b5cf6)
+![RAG Eval](https://img.shields.io/badge/RAG_eval-83.3%25%40top3-orange)
+
 > 面向企业场景的本地智能体（Agent）系统：工作流编排、工具调用、记忆管理、RAG 知识库四大核心能力。
 
 Enterprise Agent 是一个可本地部署的企业级智能体系统，通过标准化 API 层对接 ERP/CRM/OA/钉钉/企微等企业系统，内置容错重试与降级机制，支持 Docker Compose 本地部署及 Kubernetes 集群部署。
