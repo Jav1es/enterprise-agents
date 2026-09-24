@@ -5,17 +5,19 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 try:
     from langchain_text_splitters import RecursiveCharacterTextSplitter
 except ImportError:  # langchain < 1.0 兼容
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
+    from langchain.text_splitter import RecursiveCharacterTextSplitter  # type: ignore[no-redef]
 
 
 def split_documents(
-    documents: list[object],
+    documents: list[Any],
     chunk_size: int = 500,
     chunk_overlap: int = 50,
-) -> list[object]:
+) -> list[Any]:
     """按语义边界切分文档。
 
     Args:

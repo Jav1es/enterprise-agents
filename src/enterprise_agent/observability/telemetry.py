@@ -28,7 +28,8 @@ import functools
 import logging
 import os
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from opentelemetry import trace
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
@@ -38,6 +39,8 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExport
 logger = logging.getLogger(__name__)
 
 DEFAULT_OTLP_ENDPOINT = "http://localhost:4318/v1/traces"
+
+_telemetry_initialized = False
 
 
 def _build_provider(service_name: str, otlp_endpoint: str | None, console: bool) -> TracerProvider:
@@ -73,16 +76,18 @@ def init_telemetry(
         otlp_endpoint: OTLP HTTP 上报地址（含 /v1/traces），默认 http://localhost:4318/v1/traces
         console: 是否同时输出到控制台（便于本地调试无 Jaeger 场景）
     """
-    current = trace.get_tracer_provider()
-    if isinstance(current, TracerProvider) and getattr(current, "_enterprise_agent_initialized", False):
-        return current
+    global _telemetry_initialized
+    if _telemetry_initialized:
+        current = trace.get_tracer_provider()
+        if isinstance(current, TracerProvider):
+            return current
 
     provider = _build_provider(
         service_name=service_name or os.environ.get("OTEL_SERVICE_NAME") or "enterprise-agent",
         otlp_endpoint=otlp_endpoint,
         console=console,
     )
-    setattr(provider, "_enterprise_agent_initialized", True)
+    _telemetry_initialized = True
     trace.set_tracer_provider(provider)
     logger.info("OpenTelemetry 初始化完成: service=%s", service_name or "enterprise-agent")
     return provider
