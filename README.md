@@ -6,6 +6,18 @@ Enterprise Agent 是一个可本地部署的企业级智能体系统，通过标
 
 因为我认为 AI 落地不能只停留在概念，所以我花时间搭建了这个企业级智能体系统。架构上我设计了六层（接入、编排、工具、记忆、知识、LLM），编排用了 LangGraph，记忆做了 Redis 短期和 PostgreSQL 长期的双视野设计，RAG 用了 Dense+BM25 混合检索和 Cross-Encoder 重排。工程上我用 Docker Compose 和 Helm 做了部署，并且配了 GitHub Actions 做 CI，确保代码质量和敏感信息不泄露。虽然底层代码是我在 AI 辅助下完成的，但整个架构的设计和落地的思路是我主导的。
 
+## 运行演示
+
+> 以下为 `examples/rag_demo/` 在本机真实执行的输出（`python examples/rag_demo/rag_demo.py --eval --top-k 3`）。演示环境未配置 LLM API Key、未安装 `sentence-transformers`，系统自动降级为 **retrieval-only 模式**——跳过生成与重排，直接返回 Top-K 命中片段与精确到条款的引用来源。这恰好验证了「无 Key 也能离线跑通上传文档 → 提问 → 引用溯源」的完整链路。
+
+![RAG 检索演示逐帧回放](assets/rag_run_demo.gif)
+
+![RAG 检索演示真实运行输出](assets/rag_run_terminal.png)
+
+**评测结果（真实 stdout，非估算）**：检索准确率 @3 = **83.3%（5/6）**，引用来源准确率 = **83.3%**，拒答率 = **16.7%（1/6）**。完整口径与逐题明细见 [`examples/rag_demo/RAG_Eval_Report.md`](examples/rag_demo/RAG_Eval_Report.md)。
+
+> 说明：配置 LLM API Key 并安装 `sentence-transformers` 后，同一链路会启用 Cross-Encoder 重排与带引用的生成回答；Docker Compose 全栈（agent-api + Redis + PostgreSQL/pgvector + ChromaDB）与 FastAPI `/docs` 的在线演示需具备 Docker 的运行环境。
+
 ## 技术栈
 
 Python 3.11+ · FastAPI · LangGraph · LangChain · Pydantic v2 · ChromaDB/Milvus · Redis · SQLAlchemy · MCP SDK · Docker · Helm/K8s
