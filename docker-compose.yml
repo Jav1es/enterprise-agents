@@ -14,6 +14,10 @@ services:
       DATABASE_URL: postgresql+asyncpg://agent:Agent2026!@postgres:5432/agent
       VECTOR_STORE: chroma
       CHROMA_PERSIST_DIR: /app/data/chroma
+      # ==== OpenTelemetry 全链路可观测性（OTLP -> Jaeger）====
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: enterprise-agent
+      OTEL_TRACES_EXPORTER: otlp
     volumes:
       - chroma-data:/app/data/chroma
     depends_on:
@@ -21,6 +25,19 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      jaeger:
+        condition: service_started
+    restart: unless-stopped
+
+  # ==== Jaeger 全链路追踪（16686 控制台 + 4317 gRPC + 4318 OTLP HTTP）====
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
     restart: unless-stopped
 
   redis:

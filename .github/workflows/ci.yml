@@ -46,3 +46,64 @@ jobs:
             echo "::error::检测到疑似硬编码敏感信息，请修复后重新提交"
             exit 1
           fi
+
+  eval-rag:
+    name: RAG Eval Regression (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.4.x"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Sync dependencies
+        run: uv sync --all-extras
+
+      - name: Install eval deps
+        run: |
+          uv pip install chromadb rank-bm25 langchain langchain-core langchain-openai langchain-text-splitters
+
+      - name: Run RAG eval (examples/rag_demo)
+        env:
+          PYTHONPATH: src
+        run: uv run python examples/rag_demo/rag_demo.py --eval --top-k 3 > rag_eval_report.json 2>&1 || { echo "::error::RAG 评测集执行失败"; exit 1; }
+
+      - name: Assert metric thresholds
+        env:
+          PYTHONPATH: src
+        run: |
+          uv run python - <<'EOF'
+          import json, sys
+          raw = open("rag_eval_report.json", encoding="utf-8").read()
+          # rag_demo.py --eval 的 stdout 含 banner 文本，需提取首个 { 到末尾 } 的 JSON 块
+          start, end = raw.find("{"), raw.rfind("}")
+          if start < 0 or end < 0:
+              sys.exit("::error::未在评测输出中找到 JSON 块")
+          data = json.loads(raw[start:end + 1])
+          ra = data["retrieval_accuracy"]; rr = data["refusal_rate"]; ca = data["citation_accuracy"]
+          print(f"retrieval_accuracy={ra:.2%} refusal_rate={rr:.2%} citation_accuracy={ca:.2%} total={data['total_questions']}")
+          # 回归阈值：检索准确率 >= 60%，引用来源准确率 >= 60%，拒答率 <= 40%
+          assert ra >= 0.60, f"检索准确率 {ra:.2%} 低于阈值 60%"
+          assert ca >= 0.60, f"引用来源准确率 {ca:.2%} 低于阈值 60%"
+          assert rr <= 0.40, f"拒答率 {rr:.2%} 高于阈值 40%"
+          print("::notice::RAG 评测回归通过")
+          EOF
+
+      - name: Upload eval report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rag-eval-report-python${{ matrix.python-version }}
+          path: rag_eval_report.json
+          if-no-files-found: error

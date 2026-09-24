@@ -12,6 +12,8 @@ from typing import Any
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
 
+from enterprise_agent.observability.telemetry import get_tracer
+
 from .nodes import (
     planner_node,
     respond_node,
@@ -84,10 +86,24 @@ class AgentWorkflow:
         return graph.compile()
 
     async def ainvoke(self, state: AgentState) -> AgentState:
-        """异步执行工作流。"""
-        result = await self.graph.ainvoke(state)
+        """异步执行工作流。
+
+        根 span（agent.workflow.invoke）贯穿整条链路：节点 span
+        （agent.node.router / planner / tool_call / reviewer ...）自动
+        继承根 span 的 trace_id，可在 Jaeger 中按 trace 聚合查看阶段耗时。
+        """
+        tracer = get_tracer()
+        with tracer.start_as_current_span("agent.workflow.invoke") as root:
+            root.set_attribute("agent.session_id", str(state.get("session_id", "") or ""))
+            root.set_attribute("agent.user_input", str((state.get("user_input") or "")[:200]))
+            result = await self.graph.ainvoke(state)
         return result
 
     def invoke(self, state: AgentState) -> AgentState:
         """同步执行工作流。"""
-        return self.graph.invoke(state)
+        tracer = get_tracer()
+        with tracer.start_as_current_span("agent.workflow.invoke") as root:
+            root.set_attribute("agent.session_id", str(state.get("session_id", "") or ""))
+            root.set_attribute("agent.user_input", str((state.get("user_input") or "")[:200]))
+            result = self.graph.invoke(state)
+        return result

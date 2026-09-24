@@ -2,6 +2,9 @@
 
 节点: router / planner / retrieve / tool_call / reviewer / respond
 TODO: 补充各节点内的 LLM 调用与结构化输出（Pydantic）实现。
+
+可观测性: 所有节点经 traced_node 打点，span 名称为 agent.node.<node>，
+trace_id 由外层根 span（agent.workflow.invoke）贯穿整条链路。
 """
 
 from __future__ import annotations
@@ -9,11 +12,14 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from enterprise_agent.observability.telemetry import traced_node
+
 from .state import AgentState
 
 logger = logging.getLogger(__name__)
 
 
+@traced_node("agent.node.router")
 async def router_node(state: AgentState) -> dict[str, Any]:
     """路由节点：判断任务类型（knowledge / data / mixed）。
 
@@ -22,6 +28,7 @@ async def router_node(state: AgentState) -> dict[str, Any]:
     return {"route": "mixed", "step_number": state.get("step_number", 0) + 1}
 
 
+@traced_node("agent.node.planner")
 async def planner_node(state: AgentState) -> dict[str, Any]:
     """规划节点：将任务拆解为可执行的步骤计划。
 
@@ -30,6 +37,7 @@ async def planner_node(state: AgentState) -> dict[str, Any]:
     return {"step_number": state.get("step_number", 0) + 1}
 
 
+@traced_node("agent.node.retrieve")
 async def retrieve_node(state: AgentState) -> dict[str, Any]:
     """知识检索节点：从 RAG 知识库检索证据。
 
@@ -38,6 +46,7 @@ async def retrieve_node(state: AgentState) -> dict[str, Any]:
     return {"step_number": state.get("step_number", 0) + 1}
 
 
+@traced_node("agent.node.tool_call")
 async def tool_call_node(state: AgentState) -> dict[str, Any]:
     """工具调用节点：执行规划中选择的工具。
 
@@ -46,6 +55,7 @@ async def tool_call_node(state: AgentState) -> dict[str, Any]:
     return {"step_number": state.get("step_number", 0) + 1}
 
 
+@traced_node("agent.node.reviewer")
 async def reviewer_node(state: AgentState) -> dict[str, Any]:
     """评审节点：校验工具结果 / 补货量等关键输出。
 
@@ -54,6 +64,7 @@ async def reviewer_node(state: AgentState) -> dict[str, Any]:
     return {"step_number": state.get("step_number", 0) + 1}
 
 
+@traced_node("agent.node.respond")
 async def respond_node(state: AgentState) -> dict[str, Any]:
     """回复节点：汇总证据与工具结果，生成最终回答。
 
