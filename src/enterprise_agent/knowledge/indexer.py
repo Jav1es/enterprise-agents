@@ -7,10 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-try:
-    from langchain_text_splitters import RecursiveCharacterTextSplitter
-except ImportError:  # langchain < 1.0 兼容
-    from langchain.text_splitter import RecursiveCharacterTextSplitter  # type: ignore[no-redef]
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 def split_documents(
