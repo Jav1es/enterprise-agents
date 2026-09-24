@@ -14,7 +14,16 @@ Enterprise Agent 是一个可本地部署的企业级智能体系统，通过标
 
 ![RAG 检索演示真实运行输出](assets/rag_run_terminal.png)
 
-**评测结果（真实 stdout，非估算）**：检索准确率 @3 = **83.3%（5/6）**，引用来源准确率 = **83.3%**，拒答率 = **16.7%（1/6）**。完整口径与逐题明细见 [`examples/rag_demo/RAG_Eval_Report.md`](examples/rag_demo/RAG_Eval_Report.md)。
+**评测结果（真实 stdout，非估算）**
+
+| 指标 | 结果 | 说明 |
+| :-- | :--: | :-- |
+| 🎯 检索准确率 @3 | **83.3%** | 5 / 6（Top-3 命中黄金条款） |
+| 🔗 引用来源准确率 | **83.3%** | 5 / 6（引用精确到《第X条》） |
+| 🛡️ 拒答率 | **16.7%** | 1 / 6（资料不足时正确拒答，不编造） |
+| ⚙️ 运行模式 | retrieval-only | 本机无 LLM Key 自动降级，离线跑通全链路 |
+
+> 完整评测口径、逐题明细与复现命令见 [`examples/rag_demo/RAG_Eval_Report.md`](examples/rag_demo/RAG_Eval_Report.md)。
 
 > 说明：配置 LLM API Key 并安装 `sentence-transformers` 后，同一链路会启用 Cross-Encoder 重排与带引用的生成回答；Docker Compose 全栈（agent-api + Redis + PostgreSQL/pgvector + ChromaDB）与 FastAPI `/docs` 的在线演示需具备 Docker 的运行环境。
 
@@ -23,6 +32,11 @@ Enterprise Agent 是一个可本地部署的企业级智能体系统，通过标
 Python 3.11+ · FastAPI · LangGraph · LangChain · Pydantic v2 · ChromaDB/Milvus · Redis · SQLAlchemy · MCP SDK · Docker · Helm/K8s
 
 ## 六层架构概览
+
+![Enterprise Agent 六层架构图](assets/architecture.svg)
+
+<details>
+<summary>纯文本版架构图（可复制 / 无网络环境备用）</summary>
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -48,6 +62,8 @@ Python 3.11+ · FastAPI · LangGraph · LangChain · Pydantic v2 · ChromaDB/Mil
 │  DeepSeek / Qwen / Ollama 本地模型 (OpenAI 兼容接口)   │
 └─────────────────────────────────────────────────────────┘
 ```
+
+</details>
 
 ## 核心能力
 
