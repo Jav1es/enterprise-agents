@@ -1,0 +1,41 @@
+# ===== 环境与密钥 =====
+.env
+.env.*
+!.env.example
+config.yaml
+config.yml
+*.key
+*.pem
+*.p12
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ===== 向量库与模型缓存（可选 vector extra 的本地产物） =====
+chroma/
+chroma.sqlite3
+models/
+*.onnx
+
+# ===== IDE / 系统 =====
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ===== 演示产物 =====
+assets/*.png
+assets/*.gif

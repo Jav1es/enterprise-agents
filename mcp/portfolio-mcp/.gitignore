@@ -1,0 +1,35 @@
+# ===== 环境与密钥 =====
+.env
+.env.*
+!.env.example
+config.yaml
+config.yml
+*.key
+*.pem
+*.p12
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ===== IDE / 系统 =====
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ===== 演示产物 =====
+assets/*.png
+assets/*.gif

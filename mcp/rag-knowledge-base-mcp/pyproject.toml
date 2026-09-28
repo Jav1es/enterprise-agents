@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rag-knowledge-base-mcp"
+version = "0.1.0"
+description = "MCP Server：RAG 企业知识库问答（add_document / search / retrieve_with_evidence），BM25 检索 + 引用证据 + 制度问答提示模板"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Jav1es" },
+]
+keywords = ["mcp", "agent", "llm", "rag", "knowledge-base", "bm25", "知识库"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+
+dependencies = [
+    # 使用 mcp 1.x 的 FastMCP API（2.x 已将 FastMCP 重命名为 MCPServer，破坏性变更）
+    "mcp>=1.2.0,<2",
+    "rank-bm25>=0.2.2",
+    "langchain-text-splitters>=0.2.0",
+    "pydantic>=2.8.0",
+]
+
+[project.optional-dependencies]
+# 向量检索增强（可选）：默认不安装也能运行（纯 BM25 检索）
+vector = [
+    "chromadb>=0.5.0",
+    "sentence-transformers>=2.7.0",
+]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[project.scripts]
+rag-knowledge-base-mcp = "rag_knowledge_base_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rag_knowledge_base_mcp"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "ASYNC"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

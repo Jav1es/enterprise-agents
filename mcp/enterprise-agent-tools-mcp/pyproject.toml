@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "enterprise-agent-tools-mcp"
+version = "0.1.0"
+description = "MCP Server：面向企业场景的工具调用（ERP 库存/订单、补货建议、知识检索、通用 HTTP），基于 enterprise-agent 的 tools 层抽象精简复用"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Jav1es" },
+]
+keywords = ["mcp", "agent", "llm", "enterprise", "erp", "tools"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+
+dependencies = [
+    # 使用 mcp 1.x 的 FastMCP API（2.x 已将 FastMCP 重命名为 MCPServer，破坏性变更）
+    "mcp>=1.2.0,<2",
+    "httpx>=0.27.0",
+    "pydantic>=2.8.0",
+    "pydantic-settings>=2.4.0",
+    "python-dotenv>=1.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[project.scripts]
+enterprise-agent-tools-mcp = "enterprise_agent_tools_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/enterprise_agent_tools_mcp"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "ASYNC"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
