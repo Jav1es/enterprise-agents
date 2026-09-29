@@ -1,3 +1,5 @@
+![Demo](assets/demo_rag.gif)
+
 # Enterprise Agent
 
 [![CI](https://github.com/Jav1es/enterprise-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/Jav1es/enterprise-agents/actions/workflows/ci.yml)
