@@ -65,7 +65,9 @@ class AgentWorkflow:
         # 添加节点
         graph.add_node("router", router_node)
         graph.add_node("planner", planner_node)
-        graph.add_node("retrieve", retrieve_node)
+        graph.add_node(
+            "retrieve", functools.partial(retrieve_node, retriever=self.retriever)
+        )
         graph.add_node("tool_call", tool_call_node)
         graph.add_node("reviewer", reviewer_node)
         graph.add_node("respond", functools.partial(respond_node, llm=self.llm))

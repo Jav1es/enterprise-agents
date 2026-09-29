@@ -10,7 +10,7 @@ import uuid
 from fastapi import APIRouter, HTTPException, Request
 from sse_starlette.sse import EventSourceResponse
 
-from enterprise_agent.api.schemas import ChatRequest, ChatResponse
+from enterprise_agent.api.schemas import ChatRequest, ChatResponse, Citation
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +39,25 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
     result = await workflow.ainvoke(state)
     latency_ms = int((time.perf_counter() - start) * 1000)
 
+    # RAG 证据 → citations
+    citations: list[Citation] = []
+    for c in result.get("citations") or []:
+        try:
+            citations.append(
+                Citation(
+                    source=str(c.get("source") or ""),
+                    chunk_id=int(c.get("chunk_id") or 0),
+                    score=float(c.get("score") or 0.0),
+                )
+            )
+        except (TypeError, ValueError):
+            continue
+
     return ChatResponse(
         session_id=body.session_id,
         reply=result.get("final_output") or "",
         trace_id=f"trc_{uuid.uuid4().hex[:8]}",
+        citations=citations,
         latency_ms=latency_ms,
     )
 

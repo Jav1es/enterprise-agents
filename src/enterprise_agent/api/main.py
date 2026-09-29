@@ -44,6 +44,52 @@ async def lifespan(app: FastAPI):
 
         registry = ToolRegistry()
 
+        # --- RAG 知识库检索器 ---
+        retriever = None
+        try:
+            import os
+            from pathlib import Path
+
+            import chromadb
+            from chromadb.utils import embedding_functions
+            from rank_bm25 import BM25Okapi
+
+            from enterprise_agent.knowledge.indexer import resolve_embedding_model
+            from enterprise_agent.knowledge.retriever import HybridRetriever, tokenize_zh
+
+            persist_dir = settings.chroma_persist_dir
+            if not Path(persist_dir).is_absolute():
+                persist_dir = str(Path.cwd() / persist_dir)
+            chroma_client = chromadb.PersistentClient(path=persist_dir)
+            model = resolve_embedding_model(settings.embedding_model)
+            ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=model)
+            collection = chroma_client.get_or_create_collection(
+                name="enterprise_kb", embedding_function=ef
+            )
+            count = collection.count()
+            if count > 0:
+                all_data = collection.get(include=["documents"])
+                corpus = [d or "" for d in (all_data["documents"] or [])]
+                bm25 = BM25Okapi([tokenize_zh(t) for t in corpus])
+                retriever = HybridRetriever(
+                    collection=collection,
+                    bm25_index=bm25,
+                    doc_ids=list(all_data["ids"]),
+                    top_k=6,
+                )
+                logger.info(
+                    "RAG 检索器初始化完成: collection=enterprise_kb chunks=%d model=%s",
+                    count,
+                    model,
+                )
+            else:
+                logger.warning(
+                    "知识库集合为空，请先运行: python -m enterprise_agent.knowledge.indexer"
+                )
+        except Exception:  # noqa: BLE001 - 检索器初始化失败不阻断服务
+            logger.exception("RAG 检索器初始化失败，本次服务无知识检索能力")
+            retriever = None
+
         # --- Agent 工作流 ---
         from enterprise_agent.orchestration.graph import AgentWorkflow
 
@@ -51,6 +97,7 @@ async def lifespan(app: FastAPI):
             llm=llm,
             tools=registry.to_langchain_tools(),
             memory_manager=memory,
+            retriever=retriever,
         )
         app.state.workflow = workflow
         app.state.llm = llm

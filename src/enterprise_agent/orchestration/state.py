@@ -28,6 +28,7 @@ class AgentState(TypedDict, total=False):
     chat_history: list[dict[str, Any]]
     intermediate_steps: list[tuple[str, str, Any]]
     knowledge_evidence: list[dict[str, Any]]
+    citations: list[dict[str, Any]]
     tool_results: list[dict[str, Any]]
     final_output: str | None
     retry_count: int
