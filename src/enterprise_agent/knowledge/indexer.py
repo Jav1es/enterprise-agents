@@ -68,14 +68,14 @@ def _split_text(text: str, chunk_size: int = 500, chunk_overlap: int = 50) -> li
 
 
 def split_documents(
-    documents: list[dict[str, Any]],
+    documents: list[Any],
     chunk_size: int = 500,
     chunk_overlap: int = 50,
 ) -> list[dict[str, Any]]:
-    """按语义边界切分文档（标准库实现，兼容旧调用方）。
+    """按语义边界切分文档（兼容 dict 与 LangChain Document 输入）。
 
     Args:
-        documents: [{"text": ..., "source": ...}, ...] 列表
+        documents: [{"text": ..., "source": ...}, ...] 或 [Document(page_content=..., metadata={"source": ...}), ...]
         chunk_size: 切片大小（默认 500）
         chunk_overlap: 切片重叠（默认 50）
 
@@ -84,8 +84,15 @@ def split_documents(
     """
     chunks: list[dict[str, Any]] = []
     for doc in documents:
-        for piece in _split_text(doc["text"], chunk_size, chunk_overlap):
-            chunks.append({"text": piece, "source": doc["source"]})
+        if isinstance(doc, dict):
+            text = str(doc["text"])
+            source = str(doc.get("source", ""))
+        else:
+            text = str(getattr(doc, "page_content", ""))
+            metadata = getattr(doc, "metadata", {}) or {}
+            source = str(metadata.get("source", "")) if isinstance(metadata, dict) else str(metadata)
+        for piece in _split_text(text, chunk_size, chunk_overlap):
+            chunks.append({"text": piece, "source": source})
     return chunks
 
 
@@ -117,13 +124,13 @@ def build_knowledge_index(
     settings = get_settings()
     model = resolve_embedding_model(settings.embedding_model)
 
-    docs_dir = Path(docs_dir)
-    if not docs_dir.is_dir():
-        raise FileNotFoundError(f"docs 目录不存在: {docs_dir}")
+    docs_dir_path = Path(docs_dir)
+    if not docs_dir_path.is_dir():
+        raise FileNotFoundError(f"docs 目录不存在: {docs_dir_path}")
 
-    docs = _load_markdown_docs(docs_dir)
+    docs = _load_markdown_docs(docs_dir_path)
     if not docs:
-        raise RuntimeError(f"docs 目录下未发现 .md 文档: {docs_dir}")
+        raise RuntimeError(f"docs 目录下未发现 .md 文档: {docs_dir_path}")
     for d in docs:
         d["text"] = d["text"].strip()
 

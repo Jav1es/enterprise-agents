@@ -47,7 +47,6 @@ async def lifespan(app: FastAPI):
         # --- RAG 知识库检索器 ---
         retriever = None
         try:
-            import os
             from pathlib import Path
 
             import chromadb

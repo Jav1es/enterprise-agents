@@ -98,7 +98,11 @@ def build_index(doc_path: str, persist_dir: str) -> tuple[Any, list[LCDocument],
     import chromadb
 
     docs = load_document(doc_path)
-    chunks = split_documents(docs, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+    chunk_dicts = split_documents(docs, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+    chunks = [
+        LCDocument(page_content=cd["text"], metadata={"source": cd["source"]})
+        for cd in chunk_dicts
+    ]
 
     client = chromadb.PersistentClient(path=persist_dir)
     collection = client.get_or_create_collection(name=DEFAULT_COLLECTION)
