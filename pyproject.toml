@@ -81,7 +81,7 @@ select = ["E", "F", "I", "W", "UP", "B", "ASYNC"]
 ignore = ["E501"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 plugins = ["pydantic.mypy"]
 ignore_missing_imports = true
 check_untyped_defs = true

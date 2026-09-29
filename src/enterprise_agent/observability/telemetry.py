@@ -44,20 +44,22 @@ _telemetry_initialized = False
 
 
 def _build_provider(service_name: str, otlp_endpoint: str | None, console: bool) -> TracerProvider:
+    otlp_exporter_cls: Any
     try:
         from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        otlp_exporter_cls = OTLPSpanExporter
     except Exception as exc:  # noqa: BLE001 - 缺 OTLP 依赖时降级控制台，不阻断业务
         logger.warning("OTLP exporter 不可用(%s)，降级为控制台输出", exc)
-        OTLPSpanExporter = None  # type: ignore[assignment,misc]
+        otlp_exporter_cls = None
 
     resource = Resource.create({SERVICE_NAME: service_name})
     provider = TracerProvider(resource=resource)
 
     endpoint = otlp_endpoint or os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT") or DEFAULT_OTLP_ENDPOINT
     try:
-        if OTLPSpanExporter is None:
+        if otlp_exporter_cls is None:
             raise RuntimeError("OTLPSpanExporter 不可用")
-        exporter = OTLPSpanExporter(endpoint=endpoint)
+        exporter = otlp_exporter_cls(endpoint=endpoint)
         provider.add_span_processor(BatchSpanProcessor(exporter))
         logger.info("OTLP span exporter 已启用: %s", endpoint)
     except Exception as exc:  # pragma: no cover - 导出器初始化失败不应阻断业务
