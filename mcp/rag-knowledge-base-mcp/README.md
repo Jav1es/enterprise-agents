@@ -89,7 +89,7 @@ uv pip install 'chromadb>=0.5.0' 'sentence-transformers>=2.7.0'
       "command": "uv",
       "args": [
         "--directory",
-        "D:/Jav1e Flies/家辉专用/千问办公反馈结果/AI作品集网站（离线版）/04-企业级智能体系统(本地开发工程(enterprise-agent)/enterprise-agents/mcp/rag-knowledge-base-mcp",
+        "D:/Jav1e Flies/enterprise-agents/mcp/rag-knowledge-base-mcp",
         "run",
         "rag-knowledge-base-mcp"
       ]
@@ -109,7 +109,7 @@ uv pip install 'chromadb>=0.5.0' 'sentence-transformers>=2.7.0'
       "command": "uv",
       "args": [
         "--directory",
-        "D:/Jav1e Flies/家辉专用/千问办公反馈结果/AI作品集网站（离线版）/04-企业级智能体系统(本地开发工程(enterprise-agent)/enterprise-agents/mcp/rag-knowledge-base-mcp",
+        "D:/Jav1e Flies/enterprise-agents/mcp/rag-knowledge-base-mcp",
         "run",
         "rag-knowledge-base-mcp"
       ]

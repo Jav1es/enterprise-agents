@@ -77,7 +77,7 @@ uvx mcp dev src/enterprise_agent_tools_mcp/server.py
       "command": "uv",
       "args": [
         "--directory",
-        "D:/Jav1e Flies/家辉专用/千问办公反馈结果/AI作品集网站（离线版）/04-企业级智能体系统(本地开发工程(enterprise-agent)/enterprise-agents/mcp/enterprise-agent-tools-mcp",
+        "D:/Jav1e Flies/enterprise-agents/mcp/enterprise-agent-tools-mcp",
         "run",
         "enterprise-agent-tools-mcp"
       ]
@@ -97,7 +97,7 @@ uvx mcp dev src/enterprise_agent_tools_mcp/server.py
       "command": "uv",
       "args": [
         "--directory",
-        "D:/Jav1e Flies/家辉专用/千问办公反馈结果/AI作品集网站（离线版）/04-企业级智能体系统(本地开发工程(enterprise-agent)/enterprise-agents/mcp/enterprise-agent-tools-mcp",
+        "D:/Jav1e Flies/enterprise-agents/mcp/enterprise-agent-tools-mcp",
         "run",
         "enterprise-agent-tools-mcp"
       ]
