@@ -65,9 +65,18 @@ async def reviewer_node(state: AgentState) -> dict[str, Any]:
 
 
 @traced_node("agent.node.respond")
-async def respond_node(state: AgentState) -> dict[str, Any]:
-    """回复节点：汇总证据与工具结果，生成最终回答。
-
-    TODO: 调用 LLM 生成 final_output，附带 citations 引用来源。
-    """
+async def respond_node(state: AgentState, llm: Any | None = None) -> dict[str, Any]:
+    """回复节点：汇总证据与工具结果，调用 LLM 生成最终回答。"""
+    user_input = (state.get("user_input") or "").strip()
+    if llm is not None and user_input:
+        try:
+            resp = await llm.ainvoke([{"role": "user", "content": user_input}])
+            content = getattr(resp, "content", None) or str(resp)
+            return {"final_output": str(content), "step_number": state.get("step_number", 0) + 1}
+        except Exception as exc:  # noqa: BLE001 - LLM 调用失败时返回错误提示，不阻断响应
+            logger.error("respond 节点 LLM 调用失败: %s", exc)
+            return {
+                "final_output": f"（LLM 调用失败：{exc}）",
+                "step_number": state.get("step_number", 0) + 1,
+            }
     return {"final_output": "", "step_number": state.get("step_number", 0) + 1}

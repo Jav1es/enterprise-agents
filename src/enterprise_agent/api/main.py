@@ -20,10 +20,58 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """应用生命周期：启动时初始化依赖（LLM / 记忆 / RAG / 工具注册）。"""
     settings = get_settings()
-    # TODO: 初始化 AgentWorkflow / 记忆存储 / RAG 检索器 / 工具注册中心
+    try:
+        # --- LLM ---
+        from langchain_openai import ChatOpenAI
+
+        llm = ChatOpenAI(
+            model=settings.llm_model,
+            api_key=settings.llm_api_key,
+            base_url=settings.llm_base_url,
+            temperature=0.3,
+            timeout=60,
+        )
+        logger.info("LLM 初始化完成: model=%s base_url=%s", settings.llm_model, settings.llm_base_url)
+
+        # --- 记忆层（Redis 短期记忆） ---
+        from enterprise_agent.memory.short_term import ShortTermMemory
+
+        memory = ShortTermMemory(settings.redis_url, settings.redis_short_term_ttl)
+        logger.info("短期记忆初始化完成: redis=%s", settings.redis_url)
+
+        # --- 工具注册中心 ---
+        from enterprise_agent.tools.registry import ToolRegistry
+
+        registry = ToolRegistry()
+
+        # --- Agent 工作流 ---
+        from enterprise_agent.orchestration.graph import AgentWorkflow
+
+        workflow = AgentWorkflow(
+            llm=llm,
+            tools=registry.to_langchain_tools(),
+            memory_manager=memory,
+        )
+        app.state.workflow = workflow
+        app.state.llm = llm
+        app.state.memory = memory
+        logger.info("AgentWorkflow 初始化完成")
+    except Exception:
+        # 启动初始化失败时打印完整 traceback，便于定位
+        import traceback
+
+        logger.error("AgentWorkflow 初始化失败:\n%s", traceback.format_exc())
+        app.state.workflow = None
+        raise
+
     logger.info("Enterprise Agent 启动, env=%s", settings.app_env)
     yield
-    # TODO: 关闭连接池 / MCP 会话
+    # 关闭连接池
+    try:
+        if getattr(app.state, "memory", None) is not None:
+            await app.state.memory.close()
+    except Exception:
+        logger.exception("关闭记忆连接失败")
     logger.info("Enterprise Agent 已关闭")
 
 

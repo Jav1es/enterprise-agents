@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import functools
 import logging
 from typing import Any
 
@@ -49,9 +50,14 @@ class AgentWorkflow:
         return state.get("route", "mixed")
 
     def _should_call_tool(self, state: AgentState) -> str:
-        """判断下一步是调用工具还是直接回复。"""
-        # TODO: 根据 planner 输出判断是否仍需要调用工具
-        return "tool" if not state.get("tool_results") else "respond"
+        """判断下一步是调用工具还是直接回复。
+
+        当前工具集为空或 planner 未产出 intermediate_steps 时直接回复，
+        避免 router -> planner -> tool_call -> planner 无限循环。
+        """
+        if self.tools and state.get("intermediate_steps"):
+            return "tool"
+        return "respond"
 
     def _build_graph(self) -> Any:
         graph = StateGraph(AgentState)
@@ -62,7 +68,7 @@ class AgentWorkflow:
         graph.add_node("retrieve", retrieve_node)
         graph.add_node("tool_call", tool_call_node)
         graph.add_node("reviewer", reviewer_node)
-        graph.add_node("respond", respond_node)
+        graph.add_node("respond", functools.partial(respond_node, llm=self.llm))
 
         # 入口与路由分支
         graph.set_entry_point("router")

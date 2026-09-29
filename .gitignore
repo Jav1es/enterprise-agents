@@ -76,6 +76,8 @@ logs/
 nohup.out
 chroma-data/
 data/
+!mcp/*/src/*/data/
+!mcp/*/src/*/data/**
 uploads/
 
 # ===== 文档生成 =====

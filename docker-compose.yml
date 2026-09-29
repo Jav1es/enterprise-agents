@@ -58,7 +58,7 @@ services:
     image: pgvector/pgvector:pg16
     environment:
       POSTGRES_USER: agent
-      POSTGRES_PASSWORD: YOUR_DB_PASSWORD
+      POSTGRES_PASSWORD: agent
       POSTGRES_DB: agent
     ports:
       - "5432:5432"
