@@ -1,0 +1,42 @@
+{
+  "model": "deepseek-chat",
+  "endpoint": "https://api.deepseek.com/v1",
+  "samples": 5,
+  "ttft_ms_median": 789.6,
+  "ttft_ms_mean": 776.4,
+  "total_ms_median": 1233.4,
+  "total_ms_mean": 1266.3,
+  "ttft_share_pct": 61.3,
+  "raw": [
+    {
+      "ttft_ms": 628.0,
+      "total_ms": 1081.4,
+      "chunks": 76,
+      "gen_chars": 131
+    },
+    {
+      "ttft_ms": 608.4,
+      "total_ms": 1076.8,
+      "chunks": 83,
+      "gen_chars": 136
+    },
+    {
+      "ttft_ms": 939.6,
+      "total_ms": 1390.4,
+      "chunks": 70,
+      "gen_chars": 113
+    },
+    {
+      "ttft_ms": 916.3,
+      "total_ms": 1549.3,
+      "chunks": 73,
+      "gen_chars": 124
+    },
+    {
+      "ttft_ms": 789.6,
+      "total_ms": 1233.4,
+      "chunks": 76,
+      "gen_chars": 127
+    }
+  ]
+}

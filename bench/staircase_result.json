@@ -1,0 +1,54 @@
+{
+  "host": "http://127.0.0.1:8080",
+  "duration_per_level": 30,
+  "results": [
+    {
+      "users": 10,
+      "requests": 206,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 7.13,
+      "p50_ms": 2,
+      "p95_ms": 2500,
+      "p99_ms": 2800,
+      "max_ms": 2888,
+      "wall_seconds": 30.6
+    },
+    {
+      "users": 20,
+      "requests": 399,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 13.8,
+      "p50_ms": 2,
+      "p95_ms": 2600,
+      "p99_ms": 2800,
+      "max_ms": 3025,
+      "wall_seconds": 30.6
+    },
+    {
+      "users": 50,
+      "requests": 805,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 27.78,
+      "p50_ms": 29,
+      "p95_ms": 3000,
+      "p99_ms": 3200,
+      "max_ms": 3517,
+      "wall_seconds": 30.6
+    },
+    {
+      "users": 100,
+      "requests": 1125,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 38.85,
+      "p50_ms": 78,
+      "p95_ms": 4000,
+      "p99_ms": 4400,
+      "max_ms": 5128,
+      "wall_seconds": 30.7
+    }
+  ]
+}
