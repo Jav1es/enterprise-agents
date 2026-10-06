@@ -1,0 +1,42 @@
+{{- /* 短周期任务用 CronJob 预热向量库；按需启用 */ -}}
+{{- if .Values.cronjobs.enabled }}
+{{- range .Values.cronjobs.jobs }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $.Release.Name }}-{{ .name }}
+  labels:
+    app.kubernetes.io/name: enterprise-agent
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+spec:
+  schedule: {{ .schedule | quote }}
+  concurrencyPolicy: {{ .concurrencyPolicy | default "Forbid" }}
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .backoffLimit | default 2 }}
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: enterprise-agent
+            app.kubernetes.io/component: {{ .name }}
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            {{- toYaml $.Values.podSecurityContext | nindent 12 }}
+          containers:
+            - name: {{ .name }}
+              image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+              args: {{ .args | toJson | nindent 16 }}
+              envFrom:
+                - configMapRef:
+                    name: {{ $.Release.Name }}-agent-config
+              {{- if .env }}
+              env:
+                {{- toYaml .env | nindent 16 }}
+              {{- end }}
+              resources:
+                {{- toYaml $.Values.resources | nindent 16 }}
+{{- end }}
+{{- end }}

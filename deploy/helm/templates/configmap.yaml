@@ -1,0 +1,20 @@
+{{- /* 非敏感配置走 ConfigMap；敏感项一律走 Secret */ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-agent-config
+  labels:
+    app.kubernetes.io/name: enterprise-agent
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  APP_ENV: {{ .Values.app.env | quote }}
+  LOG_LEVEL: {{ .Values.app.logLevel | quote }}
+  LLM_BASE_URL: {{ .Values.app.llm.baseUrl | quote }}
+  LLM_MODEL: {{ .Values.app.llm.model | quote }}
+  VECTOR_STORE: {{ .Values.app.vectorStore | quote }}
+  CHROMA_PERSIST_DIR: {{ .Values.app.chromaPersistDir | quote }}
+  {{- if .Values.telemetry.enabled }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.telemetry.otlpEndpoint | quote }}
+  OTEL_SERVICE_NAME: {{ .Values.telemetry.serviceName | quote }}
+  OTEL_TRACES_EXPORTER: {{ .Values.telemetry.tracesExporter | quote }}
+  {{- end }}

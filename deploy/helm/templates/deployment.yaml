@@ -1,0 +1,116 @@
+{{- /* 主应用 Deployment：多副本 + HPA + 探针 + 非 root 运行 */ -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-agent
+  labels:
+    app.kubernetes.io/name: enterprise-agent
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: agent
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: enterprise-agent
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: enterprise-agent
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: agent
+      annotations:
+        checksum/config: {{ include "agent.configChecksum" . | sha256sum }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: agent-api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+          env:
+            - name: APP_ENV
+              value: {{ .Values.app.env | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.app.logLevel | quote }}
+            - name: LLM_BASE_URL
+              value: {{ .Values.app.llm.baseUrl | quote }}
+            - name: LLM_MODEL
+              value: {{ .Values.app.llm.model | quote }}
+            {{- if .Values.secrets.create }}
+            - name: LLM_API_KEY
+              value: {{ .Values.secrets.llmApiKeyValue | quote }}
+            {{- else }}
+            - name: LLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.llmApiKey.existingSecret | required "secrets.llmApiKey.existingSecret 必填，或设 secrets.create=true" }}
+                  key: {{ .Values.secrets.llmApiKey.existingSecretKey }}
+            {{- end }}
+            {{- if .Values.dependencies.redis.enabled }}
+            - name: REDIS_URL
+              value: "redis://{{ .Release.Name }}-redis:{{ .Values.dependencies.redis.port }}/0"
+            {{- end }}
+            {{- if .Values.dependencies.postgres.enabled }}
+            - name: DATABASE_URL
+              value: "postgresql+asyncpg://agent@{{ .Release.Name }}-postgres:{{ .Values.dependencies.postgres.port }}/{{ .Values.dependencies.postgres.database }}"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.dependencies.postgres.existingSecret | default (printf "%s-postgres" .Release.Name) }}
+                  key: {{ .Values.dependencies.postgres.existingSecretKey }}
+            {{- end }}
+            - name: VECTOR_STORE
+              value: {{ .Values.app.vectorStore | quote }}
+            - name: CHROMA_PERSIST_DIR
+              value: {{ .Values.app.chromaPersistDir | quote }}
+            {{- if .Values.telemetry.enabled }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.telemetry.otlpEndpoint | quote }}
+            - name: OTEL_SERVICE_NAME
+              value: {{ .Values.telemetry.serviceName | quote }}
+            - name: OTEL_TRACES_EXPORTER
+              value: {{ .Values.telemetry.tracesExporter | quote }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+      # 长任务：先摘流量再等待在途请求结束，避免发布瞬间掐断流式响应
+      terminationGracePeriodSeconds: {{ .Values.app.terminationGracePeriodSeconds }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      {{- end }}

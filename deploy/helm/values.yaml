@@ -1,0 +1,134 @@
+# ===== enterprise-agent 生产默认配置 =====
+# 与 docker-compose.yml 保持一致的端口与依赖关系；敏感项一律走 Secret，禁止明文。
+image:
+  repository: enterprise-agent
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+replicaCount: 2
+
+# ===== 应用配置 =====
+app:
+  env: prod
+  logLevel: info
+  llm:
+    baseUrl: https://api.openai.com/v1
+    model: gpt-4o
+    # apiKey 走 secretKeyRef，不在此处明文
+  vectorStore: chroma
+  chromaPersistDir: /app/data/chroma
+  # 优雅停机：留足时间让在途请求完成，配合 preStop + terminationGracePeriodSeconds
+  terminationGracePeriodSeconds: 30
+
+service:
+  type: ClusterIP
+  port: 8080
+
+# ===== 探针：/health 由应用提供（与 docker-compose healthcheck 语义一致）=====
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# ===== HPA：按 CPU 阈值自动扩缩容 =====
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  # 长任务场景补一个内存阈值，避免 CPU 空闲但内存打满时无法扩容
+  targetMemoryUtilizationPercentage: 80
+
+# ===== 资源 =====
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+# ===== 依赖服务（与 docker-compose 同构）=====
+dependencies:
+  redis:
+    enabled: true
+    image: redis:7-alpine
+    port: 6379
+  postgres:
+    enabled: true
+    # pgvector：RAG 向量存储与长期事实三元组
+    image: pgvector/pgvector:pg16
+    port: 5432
+    database: agent
+    existingSecret: ""
+    existingSecretKey: POSTGRES_PASSWORD
+  jaeger:
+    enabled: true
+    # 全链路追踪：16686 控制台 / 4317 gRPC / 4318 OTLP HTTP
+    image: jaegertracing/all-in-one:1.57
+    consolePort: 16686
+    otlpGrpcPort: 4317
+    otlpHttpPort: 4318
+
+# ===== 存储：Chroma 向量库持久化 =====
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: ""
+
+# ===== 现有 Secret 名称（推荐；留空则用 secret.create）=====
+secrets:
+  # 形如 existingSecretName / existingSecretKey
+  llmApiKey:
+    existingSecret: ""
+    existingSecretKey: LLM_API_KEY
+  create: false
+  # create=true 时使用的占位值；真实值请用 helm --set 或外部密钥管理注入
+  llmApiKeyValue: ""
+  # PostgreSQL 密码：留空则安装时随机生成（randAlphaNum 24），不会落到明文配置
+  postgresPasswordValue: ""
+
+# ===== 定时任务（默认关闭；按需启用，如向量库预热 / 过期清理）=====
+cronjobs:
+  enabled: false
+  jobs: []
+  #  示例（启用时把 jobs 填成下面这样）：
+  #  - name: warmup-index
+  #    schedule: "0 3 * * *"
+  #    concurrencyPolicy: Forbid
+  #    args: ["python", "-m", "enterprise_agent.cli", "warmup"]
+
+# ===== OTel =====
+telemetry:
+  enabled: true
+  serviceName: enterprise-agent
+  otlpEndpoint: http://jaeger:4318
+  tracesExporter: otlp
+
+# ===== 调度与容错 =====
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  fsGroup: 10001
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  readOnlyRootFilesystem: false

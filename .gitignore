@@ -56,6 +56,13 @@ htmlcov/
 .cache/
 hypothesis/
 
+# ===== 压测产物（脚本与报告入库，原始数据不入库）=====
+bench/__pycache__/
+bench/*.csv
+bench/report.html
+!bench/locustfile.py
+!bench/README.md
+
 # ===== IDE / 编辑器 =====
 .idea/
 .vscode/

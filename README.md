@@ -6,7 +6,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Architecture](https://img.shields.io/badge/Architecture-6_layers-8b5cf6)
-![RAG Eval](https://img.shields.io/badge/RAG_eval-83.3%25%40top3-orange)
+![RAG Eval](https://img.shields.io/badge/RAG_eval-93.3%25%40top3-orange)
 
 > 面向企业场景的本地智能体（Agent）系统：工作流编排、工具调用、记忆管理、RAG 知识库四大核心能力。
 
@@ -22,18 +22,33 @@ Enterprise Agent 是一个可本地部署的企业级智能体系统，通过标
 
 ![RAG 检索演示真实运行输出](assets/rag_run_terminal.png)
 
-**评测结果（真实 stdout，非估算）**
+**评测结果（真实 stdout，30 题分层评测集，非估算）**
 
 | 指标 | 结果 | 说明 |
 | :-- | :--: | :-- |
-| 🎯 检索准确率 @3 | **83.3%** | 5 / 6（Top-3 命中黄金条款） |
-| 🔗 引用来源准确率 | **83.3%** | 5 / 6（引用精确到《第X条》） |
-| 🛡️ 拒答率 | **16.7%** | 1 / 6（资料不足时正确拒答，不编造） |
+| 🎯 检索准确率 @3 | **93.3%** | 28 / 30（Top-3 命中黄金条款；easy 90% / medium 100% / hard 90%） |
+| 🎯 检索准确率 @1 | **73.3%** | 22 / 30（Top-1 即用户实际看到的第一条） |
+| 🔗 引用来源准确率 | **93.3%** | 引用精确到《第X条》 |
+| 🛡️ 拒答率 | **6.7%** | 2 / 30（资料不足时正确拒答，不编造） |
 | ⚙️ 运行模式 | retrieval-only | 本机无 LLM Key 自动降级，离线跑通全链路 |
 
-> 完整评测口径、逐题明细与复现命令见 [`examples/rag_demo/RAG_Eval_Report.md`](examples/rag_demo/RAG_Eval_Report.md)。
+> **口径订正**：早期版本报「83.3% @3」—— 该数字只有 6 道题，且**实际是 Top-1 的结果被标成了 Top-3**。
+> 现已扩到 30 题分层评测（分辨率 3.3%）并订正为 @3 = 93.3%、@1 = 73.3%。两者的完整推导见报告。
+
+> 完整评测口径、逐题明细、**Cross-Encoder 重排实测增量（当前规模下为 0）**、
+> 以及「RRF 分数不可用作拒答阈值」的实测发现，见 [`examples/rag_demo/RAG_Eval_Report.md`](examples/rag_demo/RAG_Eval_Report.md)。
 
 > 说明：配置 LLM API Key 并安装 `sentence-transformers` 后，同一链路会启用 Cross-Encoder 重排与带引用的生成回答；Docker Compose 全栈（agent-api + Redis + PostgreSQL/pgvector + ChromaDB）与 FastAPI `/docs` 的在线演示需具备 Docker 的运行环境。
+
+## 部署与压测（可复现）
+
+| 组件 | 位置 | 验证方式 |
+| :-- | :-- | :-- |
+| **Helm Chart** | [`deploy/helm/`](deploy/helm) —— 完整 Chart（values + templates + HPA + 探针 + Secret 守卫） | `helm lint` 通过；`python deploy/helm/verify_chart.py` **17/17 项校验通过** |
+| **API 压测** | [`bench/locustfile.py`](bench/locustfile.py) + [`bench/README.md`](bench/README.md) | Locust 实测：20 并发 / 45 秒 / **609 请求 0 失败**，13.6 req/s，P95 2600 ms |
+
+- Helm：CPU 阈值 **70%** + 内存 80% 双指标 HPA、`/health` 双探针、非 root + 禁止提权、密钥强制走 Secret（缺 Secret 直接拒绝渲染）。
+- 压测：同步 `/v1/chat` P95 2.7 秒（五阶段完整编排），SSE 流式平均 11 ms（首包与生成解耦）。
 
 ## 技术栈
 

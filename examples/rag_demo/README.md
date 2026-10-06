@@ -13,9 +13,21 @@
 | 文件 | 说明 |
 | --- | --- |
 | `sample_policy.md` | 公开企业制度示例文档（员工手册，40 条制度，企业名已脱敏） |
+| `eval_set.py` | 评测集：30 题三难度分层（easy/medium/hard 各 10）+ 5 道拒答题，黄金关键词人工标注 |
 | `rag_demo.py` | 演示脚本：加载 → 建索引 → 提问 → 返回带引用来源的回答；无 Key 自动降级为 Top-K 检索结果 |
 | `requirements.txt` | 额外依赖说明（主要复用仓库根目录依赖） |
-| `RAG_Eval_Report.md` | 真实运行评测报告（检索准确率 / 拒答率 / 引用来源准确率） |
+| `RAG_Eval_Report.md` | 真实运行评测报告（检索准确率 / 拒答率 / 引用准确率 / 重排增量 / 幻觉风险） |
+
+## 评测结果速览（30 题，真实运行）
+
+| top_k | 检索准确率 |
+|---|---|
+| @1 | 73.3%（22/30） |
+| **@3** | **93.3%（28/30）** |
+| @5 | 93.3%（无增益） |
+
+- Cross-Encoder 重排在本规模下**增量为 0**（原因与启用条件见报告第四节）；
+- **RRF 分数无法用作拒答阈值** —— 「答得上」与「答不上」的题分数区间完全重叠（报告第五节）。
 
 ## 运行方式
 
@@ -37,8 +49,12 @@ PYTHONPATH=src python examples/rag_demo/rag_demo.py \
     --doc examples/rag_demo/sample_policy.md \
     --query "法定节假日加班费怎么算？"
 
-# 4. 运行内置评测集（生成指标数据，供 RAG_Eval_Report.md 引用）
-PYTHONPATH=src python examples/rag_demo/rag_demo.py --eval
+# 4. 运行内置评测集（30 题分层 + 5 道拒答题）
+PYTHONPATH=src python examples/rag_demo/rag_demo.py --eval --top-k 3
+
+# 5. 对照评测：同时跑「无重排」与「有 Cross-Encoder 重排」并给出增量
+#    首次需联网下载 bge-reranker-base
+PYTHONPATH=src python examples/rag_demo/rag_demo.py --compare-rerank --top-k 3
 ```
 
 Windows PowerShell 下设置环境变量：
