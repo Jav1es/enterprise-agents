@@ -58,6 +58,17 @@ def start_load(host: str, users: int, rate: int, duration: int, prefix: Path) ->
     return subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
+def fetch_json(url: str) -> dict | None:
+    try:
+        import urllib.request
+        with urllib.request.urlopen(url, timeout=5) as r:
+            if r.status == 200:
+                return json.loads(r.read().decode("utf-8"))
+    except Exception:
+        pass
+    return None
+
+
 def health_ok(host: str) -> bool:
     try:
         with urllib.request.urlopen(f"{host}/health", timeout=5) as r:
@@ -87,6 +98,9 @@ def main() -> None:
     ap.add_argument("--rate", type=int, default=5)
     ap.add_argument("--duration", type=int, default=7200, help="秒，默认 2 小时")
     ap.add_argument("--interval", type=int, default=60, help="采样间隔秒")
+    ap.add_argument("--allow-llm-cost", action="store_true",
+                    help="⚠️ 允许对「挂着真实 LLM Key 的服务」跑长稳（会持续计费）。"
+                         "默认关闭：检测到未武装预算时会拒绝启动。")
     ap.add_argument("--out", default=str(BENCH / "soak_result.json"))
     args = ap.parse_args()
 
@@ -94,6 +108,27 @@ def main() -> None:
     if not health_ok(host):
         print(f"服务 {host} 不可达，请先启动 uvicorn", file=sys.stderr)
         sys.exit(2)
+
+    # ⚠️ 成本闸：本脚本不起服务，但会持续打流量。若被监控的服务带着真实 LLM Key，
+    # 长稳测试会以「每分钟几十次」的速率持续计费 —— 实测踩过，心智负担很重。
+    # 这里主动查 /health 的预算状态：未武装预算且 workflow 已就绪（说明可能挂着真 Key）
+    # 就直接拒绝启动，要跑请先用 bench/safe_serve.py（默认离线）或设 BENCH_MAX_CALLS。
+    if not args.allow_llm_cost:
+        st = fetch_json(f"{host}/health")
+        b = (st or {}).get("llm_budget") or {}
+        wf = (st or {}).get("workflow")
+        if wf == "ready" and not b.get("enabled"):
+            print("=" * 66)
+            print("拒绝启动：检测到目标服务 workflow 就绪且未武装调用预算，")
+            print("这意味着它很可能挂着真实 LLM Key，长稳测试会持续产生计费调用。")
+            print("")
+            print("  离线跑（零成本）：")
+            print(f"    python bench/safe_serve.py --port {args.port} --workers 1")
+            print(f"    python bench/soak_monitor.py --port {args.port}")
+            print("  确要用真 Key，请显式加 --allow-llm-cost 并设置服务端 BENCH_MAX_CALLS")
+            print("=" * 66)
+            sys.exit(3)
+        print(f"成本闸：通过（workflow={wf}, budget={b}）")
 
     prefix = BENCH / "soak"
     load = start_load(host, args.users, args.rate, args.duration, prefix)

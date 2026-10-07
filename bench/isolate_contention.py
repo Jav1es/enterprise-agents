@@ -39,6 +39,7 @@ def start_server(port: int, workers: int, offline: bool = True):
     env = dict(os.environ)
     env["PYTHONPATH"] = str(ROOT / "src")
     env["PYTHONUTF8"] = "1"
+    env["BENCH_OFFLINE"] = "1"   # 压测统一离线，杜绝继承 .env 真 Key
     if offline:
         env["LLM_API_KEY"] = ""
         env.pop("OPENAI_API_KEY", None)

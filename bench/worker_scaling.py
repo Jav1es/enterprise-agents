@@ -127,6 +127,7 @@ def start_server(port: int, workers: int, log: Path, offline: bool = True) -> su
     env = dict(**__import__("os").environ)
     env["PYTHONPATH"] = str(ROOT / "src")
     env["PYTHONUTF8"] = "1"
+    env["BENCH_OFFLINE"] = "1"   # 压测统一离线，杜绝继承 .env 真 Key
     if offline:
         for k in ("LLM_API_KEY", "OPENAI_API_KEY", "LLM_BASE_URL", "LLM_MODEL"):
             env.pop(k, None)

@@ -140,8 +140,20 @@ app = FastAPI(
 
 @app.get("/health", tags=["system"])
 async def health() -> dict:
-    """健康检查接口。"""
-    return {"status": "ok", "service": "enterprise-agent", "version": "1.0.0"}
+    """健康检查接口。
+
+    附带 workflow 就绪状态与 LLM 调用预算状态 —— 压测前用它确认
+    「服务是否处于离线降级模式」「预算闸是否已武装」。
+    """
+    from enterprise_agent.api.budget import budget_status
+
+    return {
+        "status": "ok",
+        "service": "enterprise-agent",
+        "version": "1.0.0",
+        "workflow": "ready" if getattr(app.state, "workflow", None) is not None else "degraded",
+        "llm_budget": budget_status(),
+    }
 
 
 # 路由注册

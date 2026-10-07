@@ -10,6 +10,7 @@ import uuid
 from fastapi import APIRouter, HTTPException, Request
 from sse_starlette.sse import EventSourceResponse
 
+from enterprise_agent.api.budget import get_budget
 from enterprise_agent.api.schemas import ChatRequest, ChatResponse, Citation
 
 logger = logging.getLogger(__name__)
@@ -22,9 +23,20 @@ def _workflow(request: Request):
     return getattr(request.app.state, "workflow", None)
 
 
+def _guard_budget():
+    """调用预算闸：超预算直接 503，不触发任何 LLM 调用。"""
+    b = get_budget()
+    if not b.charge():
+        raise HTTPException(
+            status_code=503,
+            detail=f"LLM 调用预算已耗尽（{b.used}/{b.limit}），已熔断以避免继续计费",
+        )
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: Request, body: ChatRequest) -> ChatResponse:
     """同步对话接口。"""
+    _guard_budget()
     workflow = _workflow(request)
     if workflow is None:
         raise HTTPException(status_code=503, detail="Agent 工作流尚未初始化")
@@ -65,6 +77,7 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
 @router.post("/chat/stream")
 async def chat_stream(request: Request, body: ChatRequest) -> EventSourceResponse:
     """SSE 流式对话接口。"""
+    _guard_budget()
     workflow = _workflow(request)
     if workflow is None:
         raise HTTPException(status_code=503, detail="Agent 工作流尚未初始化")
