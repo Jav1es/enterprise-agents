@@ -18,7 +18,13 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期：启动时初始化依赖（LLM / 记忆 / RAG / 工具注册）。"""
+    """应用生命周期：启动时初始化依赖（LLM / 记忆 / RAG / 工具注册）。
+
+    ⚠️ 降级契约：**LLM 不可用时服务仍应启动**（workflow=None，/health 正常，
+    业务接口返回 503），否则「无 Key 离线演示」这条降级链路等于不存在。
+    实测踩过：空字符串 Key 会让 ChatOpenAI 构造直接抛错，此前这里 `raise`
+    导致整个进程启动失败 —— 多 worker 场景下父进程还会反复重启子进程刷日志。
+    """
     settings = get_settings()
     try:
         # --- LLM ---
@@ -103,14 +109,17 @@ async def lifespan(app: FastAPI):
         app.state.memory = memory
         logger.info("AgentWorkflow 初始化完成")
     except Exception:
-        # 启动初始化失败时打印完整 traceback，便于定位
+        # 启动初始化失败时打印完整 traceback，便于定位。
+        # 注意不 raise —— 降级链路要求服务能起来（/health 可用、业务接口 503），
+        # 否则无 Key 的离线演示 / 架构压测全都做不了。
         import traceback
 
-        logger.error("AgentWorkflow 初始化失败:\n%s", traceback.format_exc())
+        logger.error("AgentWorkflow 初始化失败，进入降级模式（业务接口将返回 503）:\n%s",
+                     traceback.format_exc())
         app.state.workflow = None
-        raise
 
-    logger.info("Enterprise Agent 启动, env=%s", settings.app_env)
+    logger.info("Enterprise Agent 启动, env=%s workflow=%s",
+                settings.app_env, "ready" if app.state.workflow is not None else "degraded")
     yield
     # 关闭连接池
     try:

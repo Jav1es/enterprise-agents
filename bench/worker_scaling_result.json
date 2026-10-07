@@ -1,0 +1,113 @@
+{
+  "levels": [
+    20,
+    50,
+    100
+  ],
+  "workers": [
+    1,
+    2,
+    4
+  ],
+  "results": [
+    {
+      "requests": 573,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 20.4,
+      "p50_ms": 2,
+      "p95_ms": 1900,
+      "p99_ms": 3800,
+      "workers": 1,
+      "users": 20
+    },
+    {
+      "requests": 1846,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 63.47,
+      "p50_ms": 2,
+      "p95_ms": 490,
+      "p99_ms": 610,
+      "workers": 1,
+      "users": 50
+    },
+    {
+      "requests": 3292,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 112.93,
+      "p50_ms": 9,
+      "p95_ms": 560,
+      "p99_ms": 730,
+      "workers": 1,
+      "users": 100
+    },
+    {
+      "requests": 350,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 12.34,
+      "p50_ms": 210,
+      "p95_ms": 3200,
+      "p99_ms": 3800,
+      "workers": 2,
+      "users": 20
+    },
+    {
+      "requests": 1338,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 45.4,
+      "p50_ms": 4,
+      "p95_ms": 600,
+      "p99_ms": 2100,
+      "workers": 2,
+      "users": 50
+    },
+    {
+      "requests": 307,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 10.36,
+      "p50_ms": 940,
+      "p95_ms": 18000,
+      "p99_ms": 20000,
+      "workers": 2,
+      "users": 100
+    },
+    {
+      "requests": 476,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 16.77,
+      "p50_ms": 82,
+      "p95_ms": 2500,
+      "p99_ms": 5600,
+      "workers": 4,
+      "users": 20
+    },
+    {
+      "requests": 1864,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 64.08,
+      "p50_ms": 3,
+      "p95_ms": 500,
+      "p99_ms": 630,
+      "workers": 4,
+      "users": 50
+    },
+    {
+      "requests": 111,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "rps": 4.15,
+      "p50_ms": 2000,
+      "p95_ms": 6100,
+      "p99_ms": 27000,
+      "workers": 4,
+      "users": 100
+    }
+  ]
+}

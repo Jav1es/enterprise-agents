@@ -1,0 +1,31 @@
+{
+  "rows": [
+    {
+      "requests": 19038,
+      "failures": 0,
+      "rps": 1210.67,
+      "p50_ms": 3,
+      "p95_ms": 18,
+      "workers": 1,
+      "target": "/health"
+    },
+    {
+      "requests": 29074,
+      "failures": 0,
+      "rps": 1609.69,
+      "p50_ms": 2,
+      "p95_ms": 8,
+      "workers": 2,
+      "target": "/health"
+    },
+    {
+      "requests": 27210,
+      "failures": 0,
+      "rps": 1398.0,
+      "p50_ms": 5,
+      "p95_ms": 11,
+      "workers": 4,
+      "target": "/health"
+    }
+  ]
+}
