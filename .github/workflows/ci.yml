@@ -34,11 +34,20 @@ jobs:
       - name: Lint with ruff
         run: uv run ruff check src tests
 
+      - name: Lint bench scripts
+        # bench/ 下的压测与工具脚本此前不在 CI 覆盖内，导致问题时无门禁。
+        # 这些脚本同样要求可运行，故纳入检查。
+        run: uv run ruff check bench
+
       - name: Type check with mypy
         run: uv run mypy src
 
       - name: Run tests
         run: uv run pytest -v
+
+      - name: Compile check (bench scripts)
+        # 保证压测脚本至少能编译，避免交付了语法错误的工具
+        run: uv run python -m compileall -q bench scripts
 
       - name: Sensitive info scan
         run: |

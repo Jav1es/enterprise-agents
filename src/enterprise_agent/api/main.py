@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI
+from langchain_core.language_models.chat_models import BaseChatModel
 
 from enterprise_agent.config.settings import get_settings
 
@@ -28,6 +29,9 @@ async def lifespan(app: FastAPI):
     导致整个进程启动失败 —— 多 worker 场景下父进程还会反复重启子进程刷日志。
     """
     settings = get_settings()
+    # 显式标注为 BaseChatModel：两条分支的具体类型不同（StubLLM / ChatOpenAI），
+    # 不加注解时 mypy 会先把变量推断成 StubLLM，再遇到 ChatOpenAI 赋值就报错。
+    llm: BaseChatModel
     try:
         # --- LLM ---
         # EA_STUB_LLM=1 时用离线路径模型：没有 Key 也能让编排全量跑通，
