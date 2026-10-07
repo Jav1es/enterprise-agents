@@ -1,0 +1,37 @@
+{
+  "results": [
+    {
+      "requests": 263,
+      "failures": 0,
+      "rps": 11.16,
+      "p50_ms": 300,
+      "p95_ms": 4000,
+      "chat_avg_ms": 2326.8,
+      "chat_p95_ms": 5600,
+      "workers": 1,
+      "users": 20
+    },
+    {
+      "requests": 225,
+      "failures": 0,
+      "rps": 9.21,
+      "p50_ms": 380,
+      "p95_ms": 3900,
+      "chat_avg_ms": 2562.8,
+      "chat_p95_ms": 5700,
+      "workers": 2,
+      "users": 20
+    },
+    {
+      "requests": 241,
+      "failures": 0,
+      "rps": 10.31,
+      "p50_ms": 330,
+      "p95_ms": 3800,
+      "chat_avg_ms": 2324.8,
+      "chat_p95_ms": 4500,
+      "workers": 4,
+      "users": 20
+    }
+  ]
+}
