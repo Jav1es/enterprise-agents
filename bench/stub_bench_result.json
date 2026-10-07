@@ -1,0 +1,35 @@
+{
+  "users": 20,
+  "duration": 30,
+  "rss_samples": [],
+  "endpoints": [
+    {
+      "name": "GET /health",
+      "requests": "260",
+      "failures": "0",
+      "avg_ms": "114.33265807691686",
+      "p95_ms": "320"
+    },
+    {
+      "name": "POST /v1/chat",
+      "requests": "184",
+      "failures": "0",
+      "avg_ms": "941.8698103261843",
+      "p95_ms": "1600"
+    },
+    {
+      "name": "POST /v1/chat/stream (SSE)",
+      "requests": "88",
+      "failures": "0",
+      "avg_ms": "119.38824318171596",
+      "p95_ms": "300"
+    }
+  ],
+  "requests": 532,
+  "failures": 0,
+  "rps": 18.39,
+  "p50_ms": 160,
+  "p95_ms": 1500,
+  "p99_ms": 1700,
+  "max_ms": 1810
+}

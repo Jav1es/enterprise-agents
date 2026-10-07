@@ -18,7 +18,12 @@ class ShortTermMemory:
     """基于 Redis 的短期会话记忆。"""
 
     def __init__(self, redis_url: str, ttl_seconds: int = 1800) -> None:
-        self._redis: aioredis.Redis = aioredis.from_url(redis_url, decode_responses=True)
+        # protocol=2：redis-py 8.x 默认 RESP3，连上先发 HELLO 握手。
+        # 显式降到 RESP2 后兼容性最好（真实 Redis、mini-redis 压测替身都能连），
+        # 且本类只用到 get/set/delete，RESP3 的特性用不上。
+        self._redis: aioredis.Redis = aioredis.from_url(
+            redis_url, decode_responses=True, protocol=2
+        )
         self.ttl_seconds = ttl_seconds
         self._key_prefix = "agent:session:"
 

@@ -117,7 +117,9 @@ def main() -> None:
         st = fetch_json(f"{host}/health")
         b = (st or {}).get("llm_budget") or {}
         wf = (st or {}).get("workflow")
-        if wf == "ready" and not b.get("enabled"):
+        llm_mode = (st or {}).get("llm", {}).get("mode")
+        # stub 模式零成本（llm.mode=stub），不拦
+        if wf == "ready" and not b.get("enabled") and llm_mode != "stub":
             print("=" * 66)
             print("拒绝启动：检测到目标服务 workflow 就绪且未武装调用预算，")
             print("这意味着它很可能挂着真实 LLM Key，长稳测试会持续产生计费调用。")

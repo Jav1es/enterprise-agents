@@ -7,7 +7,9 @@
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import asynccontextmanager
+from typing import Any
 
 from fastapi import FastAPI
 
@@ -28,16 +30,25 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     try:
         # --- LLM ---
-        from langchain_openai import ChatOpenAI
+        # EA_STUB_LLM=1 时用离线路径模型：没有 Key 也能让编排全量跑通，
+        # 用于零成本压测与离线演练。不设置时走真实模型。
+        if os.environ.get("EA_STUB_LLM") == "1":
+            from enterprise_agent.llm.stub import StubLLM
 
-        llm = ChatOpenAI(
-            model=settings.llm_model,
-            api_key=settings.llm_api_key,
-            base_url=settings.llm_base_url,
-            temperature=0.3,
-            timeout=60,
-        )
-        logger.info("LLM 初始化完成: model=%s base_url=%s", settings.llm_model, settings.llm_base_url)
+            llm = StubLLM(temperature=0.3)
+            logger.info("使用 StubLLM（EA_STUB_LLM=1，零网络零计费）")
+        else:
+            from langchain_openai import ChatOpenAI
+
+            llm = ChatOpenAI(
+                model=settings.llm_model,
+                api_key=settings.llm_api_key,
+                base_url=settings.llm_base_url,
+                temperature=0.3,
+                timeout=60,
+            )
+            logger.info("LLM 初始化完成: model=%s base_url=%s",
+                        settings.llm_model, settings.llm_base_url)
 
         # --- 记忆层（Redis 短期记忆） ---
         from enterprise_agent.memory.short_term import ShortTermMemory
@@ -147,11 +158,23 @@ async def health() -> dict:
     """
     from enterprise_agent.api.budget import budget_status
 
+    llm_info: dict[str, Any] = {"mode": "unknown"}
+    try:
+        if os.environ.get("EA_STUB_LLM") == "1":
+            from enterprise_agent.llm.stub import stub_stats
+
+            llm_info = {"mode": "stub", **stub_stats()}
+        else:
+            llm_info = {"mode": "real"}
+    except Exception:
+        pass
+
     return {
         "status": "ok",
         "service": "enterprise-agent",
         "version": "1.0.0",
         "workflow": "ready" if getattr(app.state, "workflow", None) is not None else "degraded",
+        "llm": llm_info,
         "llm_budget": budget_status(),
     }
 
