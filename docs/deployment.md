@@ -39,6 +39,26 @@ helm uninstall enterprise-agent
 - 网络策略最小化
 - 镜像签名与漏洞扫描（trivy）
 
+### ⚠️ ChromaDB 必须以嵌入式方式使用
+
+**不要把 ChromaDB 以 Server 模式暴露任何端口。**
+
+本项目所有调用点都使用 `chromadb.PersistentClient(path=...)`（进程内嵌入式），
+`docker-compose.yml` 里也没有 chroma server 服务 —— 这是刻意的安全选择，不是省事。
+
+原因：ChromaDB 现有全部版本（`0.4.17` ~ `1.5.9`）存在 8 条未修复漏洞，
+其中 **CVE-2026-45829 是 CVSS 10.0 的预认证代码注入**，攻击面正是它的 HTTP API
+（`/api/v2/tenants/{tenant}/databases/{db}/collections`）。嵌入式模式下该端点不存在，
+漏洞不可触达；一旦起 server 模式并监听端口，这些漏洞立即变为可利用。
+
+完整分析、残余风险与重新评估条件见
+[`docs/security-risk-chromadb.md`](./security-risk-chromadb.md)。
+
+**若确需 server 模式**（例如多进程共享向量库），必须先完成：
+1. 绑定 `127.0.0.1` 或置于内网，绝不对公网暴露；
+2. 前置认证网关，不依赖 ChromaDB 自带的 RBAC（CVE-2026-45830/45831 说明其校验不可信）；
+3. 单租户部署，不与他人共享实例。
+
 ## 3. 可观测性
 
 | 组件 | 说明 |
